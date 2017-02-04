@@ -24,7 +24,7 @@ public class NewBehaviourScript : MonoBehaviour
 
     public byte[,] blocks;
     private int squareCount;
-
+    public bool update = false;
 
 
     // Use this for initialization
@@ -40,31 +40,65 @@ public class NewBehaviourScript : MonoBehaviour
 
     void Update()
     {
+        if (update)
+        {
+            BuildMesh();
+            UpdateMesh();
+            update = false;
+        }
+    }
+
+
+    int NoiseInt(int x, int y, float scale, float mag, float exp)
+    {
+
+        return (int)(Mathf.Pow((Mathf.PerlinNoise(x / scale, y / scale) * mag), (exp)));
 
 
     }
 
     void GenTerrain()
     {
-        blocks = new byte[10, 10];
+        blocks = new byte[96, 128];
 
         for (int px = 0; px < blocks.GetLength(0); px++)
         {
+            int stone = NoiseInt(px, 0, 80, 15, 1);
+            stone += NoiseInt(px, 0, 50, 30, 1);
+            stone += NoiseInt(px, 0, 10, 10, 1);
+            stone += 75;
+
+
+            int dirt = NoiseInt(px, 0, 100f, 35, 1);
+            dirt += NoiseInt(px, 100, 50, 30, 1);
+            dirt += 75;
+
+
             for (int py = 0; py < blocks.GetLength(1); py++)
             {
-                if (py == 5)
+                if (py < stone)
+                {
+                    blocks[px, py] = 1;
+
+                    if (NoiseInt(px, py, 12, 16, 1) > 10)
+                    {  //dirt spots
+                        blocks[px, py] = 2;
+
+                    }
+
+                    if (NoiseInt(px, py * 2, 16, 14, 1) > 10)
+                    { //Caves
+                        blocks[px, py] = 0;
+
+                    }
+
+                }
+                else if (py < dirt)
                 {
                     blocks[px, py] = 2;
                 }
-                else if (py < 5)
-                {
-                    blocks[px, py] = 1;
-                }
 
-                //if (px == 5)
-                //{
-                //    blocks[px, py] = 0;
-                //}
+
             }
         }
     }
@@ -107,6 +141,7 @@ public class NewBehaviourScript : MonoBehaviour
 
     void GenCollider(int x, int y)
     {
+
 
         //Top
         if (Block(x, y + 1) == 0)
