@@ -5,7 +5,9 @@ ehthumbs.db
 # Folder config file
 Desktop.ini
 
-sandbox/Temp/
+*/Temp/
+*/.vs*/
+*.csproj
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
