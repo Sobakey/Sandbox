@@ -6,16 +6,18 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour {
 
     public int direction = 0;
-    public KeyCode leftKey, rightKey, jumpKey;
+    public KeyCode leftKey, rightKey, jumpKey, InventoryKey;
     public float movementSpeed = 3f;
     public float jumpForce = 250f;
 
     private Rigidbody2D rb;
     private Animator anim;
+    private GUIManager guiManager;
 	
 	void Start () {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        guiManager = GameObject.Find("GUI").GetComponent<GUIManager>();
 	}
 	
 	
@@ -52,6 +54,18 @@ public class PlayerController : MonoBehaviour {
         if (Input.GetKeyDown(jumpKey))
         {
             Jump();
+        }
+
+        if (Input.GetKeyDown(InventoryKey))
+        {
+            if (guiManager.isInventoryOpen)
+            {
+                guiManager.ShowInventory(false);
+            }
+            else
+            {
+                guiManager.ShowInventory(true);
+            }
         }
     }
 
