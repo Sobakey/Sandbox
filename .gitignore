@@ -6,7 +6,11 @@ ehthumbs.db
 Desktop.ini
 
 */Temp/
+/Temp/
+Temp/
 */Library/
+/Library/
+Library/
 .vs/
 *.csproj
 *.sln
