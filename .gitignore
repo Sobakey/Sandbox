@@ -8,17 +8,17 @@ Desktop.ini
 */Temp/
 /Temp/
 Temp/
-*/Library/
-/Library/
-Library/
-.vs/
+*/Library/*
+/Library/*
+Library/*
+.vs/*
 *.csproj
 *.sln
 */*.bin
 */*.log
 *.bin
 *.log
-*/[Ll]ibrary/
+*/[Ll]ibrary/*
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
