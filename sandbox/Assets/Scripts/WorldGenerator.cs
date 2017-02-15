@@ -23,10 +23,12 @@ public class WorldGenerator : MonoBehaviour {
 	
     private void GenerateBlocks()
     {
+        float seed = Random.Range(0.1f,1.9f);
+
         int playerSpawnX = Random.Range(0,chunkSize);
         for (int x = 0; x < chunkSize; x++)
         {
-            float pValue = Mathf.PerlinNoise(x* pMod, 5*pMod);
+            float pValue = Mathf.PerlinNoise(x* pMod + seed, 5*pMod + seed);
             int pHeight = Mathf.RoundToInt(pValue * pHeightMod + heightMod);
 
             for (int y = 0; y < chunkSize; y++)
@@ -91,7 +93,13 @@ public class WorldGenerator : MonoBehaviour {
                     block_GameObject.transform.position = new Vector3(x, y);
                     if (blocks[x,y].isSolid == true)
                     {
+                    BoxCollider2D bcs = block_GameObject.AddComponent<BoxCollider2D>();
+                    }
+                    else
+                    {
                     BoxCollider2D bc = block_GameObject.AddComponent<BoxCollider2D>();
+                    bc.isTrigger = true;
+
                     }
                 }
               
@@ -103,8 +111,36 @@ public class WorldGenerator : MonoBehaviour {
     {
         int x = (int)block.transform.position.x;
         int y = (int)block.transform.position.y;
+        GameObject tallGrass = GameObject.Find("tall_grass");
+
+
+        if (block.name == "grass")
+        {
+          
+
+            if (blocks[x,y+1] != null )
+            {
+                Debug.Log("с травой");
+                GameObject.Destroy(GameObject.Find("tall_grass"));
+                blocks[x, y+1] = blockManager.FindBlock(0);
+               //TODO удалить блок с травой
+                GameObject.Destroy(block);
+            }
+            else
+            {
+                Debug.Log("без травы");
+                blocks[x, y] = blockManager.FindBlock(0);
+                GameObject.Destroy(block);
+            }
+    
+        }
+        else
+        {
         blocks[x, y] = blockManager.FindBlock(0);
         GameObject.Destroy(block);
+        Debug.Log("иное");
+
+        }
     }
 
     // Update is called once per frame
