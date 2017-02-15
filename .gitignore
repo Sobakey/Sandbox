@@ -9,6 +9,11 @@ Desktop.ini
 */.vs*/
 *.csproj
 *.sln
+*/*.bin
+*/*.log
+*.bin
+*.log
+*/Library/
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
