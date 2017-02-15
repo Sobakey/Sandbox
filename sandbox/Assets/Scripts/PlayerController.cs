@@ -79,7 +79,8 @@ public class PlayerController : MonoBehaviour {
         if (Input.GetMouseButtonDown(0))
         {
             Vector3 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            RaycastHit2D hit = Physics2D.Raycast(pos, transform.position);
+            RaycastHit2D hit = Physics2D.Raycast(pos, this.transform.position);
+            Debug.DrawRay(pos, transform.position,Color.red);
             if (hit.collider != null)
             {
                 if (hit.collider.gameObject.tag == "Block")

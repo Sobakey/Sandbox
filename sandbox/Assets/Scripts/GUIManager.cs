@@ -8,9 +8,17 @@ public class GUIManager : MonoBehaviour {
     public Image playerInventory;
     public bool isInventoryOpen = false;
     public Image[] slots;
+    public GameObject slotPrefab;
 
     private Inventory playerInventoryScript;
+    private GameObject cursorIcon;
+    private Item.ItemStack cursorStack;
 
+    private void Start()
+    {
+        cursorIcon = (GameObject) GameObject.Instantiate(slotPrefab,Vector3.zero,Quaternion.identity);
+        cursorIcon.transform.SetParent(gameObject.transform);
+    }
 
     private void Update()
     {
@@ -19,8 +27,11 @@ public class GUIManager : MonoBehaviour {
             playerInventoryScript = GameObject.FindWithTag("player").GetComponent<Inventory>();
         }
 
+        RenderCursorStack();
+        
+
         if (isInventoryOpen)
-        {
+        {           
             if (Input.GetMouseButtonDown(0))
             {
                 for (int i = 0; i < slots.Length; i++)
@@ -29,7 +40,8 @@ public class GUIManager : MonoBehaviour {
                     {
                         if (playerInventoryScript.itemStacks[i] != null)
                         {
-
+                            cursorStack = playerInventoryScript.itemStacks[i];
+                            playerInventoryScript.itemStacks[i] = null;
                         }
                     }
                 }
@@ -47,12 +59,38 @@ public class GUIManager : MonoBehaviour {
         isInventoryOpen = value;
     }
 
+    private void RenderCursorStack()
+    {
+        if (cursorStack != null)
+        {
+            
+            cursorIcon.transform.position = Input.mousePosition;
+            if (cursorIcon.GetComponent<Image>().color.a != 1)
+            {
+                cursorIcon.GetComponent<Image>().color = new Color(1,1,1,1);
+                cursorIcon.GetComponent<Image>().sprite = cursorStack.item.sprite;
+                cursorIcon.transform.GetChild(0).GetComponent<Text>().text = cursorStack.stackSize.ToString();
+            }
+        }
+        else
+        {
+            
+            if (cursorIcon.GetComponent<Image>().color.a != 0)
+            {
+                cursorIcon.GetComponent<Image>().color = new Color(1, 1, 1, 0);
+                cursorIcon.GetComponent<Image>().sprite = null;
+                cursorIcon.transform.GetChild(0).GetComponent<Text>().text = "";
+            }
+        }
+       
+    }
+
     public bool isMouseOverSlot(int slotIndex)
     {
         RectTransform rt = slots[slotIndex].GetComponent<RectTransform>();
-        if (Input.mousePosition.x > rt.position.x - rt.sizeDelta.x * 1.5f && Input.mousePosition.x < rt.position.x - rt.sizeDelta.x * 1.5f )
+        if (Input.mousePosition.x > rt.position.x - rt.sizeDelta.x * 1.5f && Input.mousePosition.x < rt.position.x + rt.sizeDelta.x * 1.5f )
         {
-            if (Input.mousePosition.y > rt.position.y - rt.sizeDelta.y * 1.5f && Input.mousePosition.y < rt.position.y - rt.sizeDelta.y * 1.5f)
+            if (Input.mousePosition.y > rt.position.y - rt.sizeDelta.y * 1.5f && Input.mousePosition.y < rt.position.y + rt.sizeDelta.y * 1.5f)
             {
                 return true;
             }
