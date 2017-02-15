@@ -9,7 +9,7 @@ Desktop.ini
 /Temp/
 Temp/
 */Library/*
-/Library/
+sandbox/Library/
 /Library/*
 Library/*
 .vs/*
