@@ -6,9 +6,14 @@ ehthumbs.db
 Desktop.ini
 
 */Temp/
-*/.vs*/
+.vs/
 *.csproj
 *.sln
+*/*.bin
+*/*.log
+*.bin
+*.log
+*/[Ll]ibrary/
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
