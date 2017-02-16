@@ -41,6 +41,7 @@ public class Hotbar : MonoBehaviour {
     private void UpdateSelector()
     {
         selector.rectTransform.localPosition = slots[selectedSlot - 1].rectTransform.localPosition;
+        playerInv.gameObject.GetComponent<PlayerController>().HoldItem(slots[selectedSlot - 1].sprite);
     }
 
     private void UpdateItems()

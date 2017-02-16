@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour {
     public float jumpForce = 250f;
     public LayerMask groundLayer;
     public float groundCheckDistance = 0.30f;
+    public SpriteRenderer handSlot;
 
     private Rigidbody2D rb;
     private Animator anim;
@@ -76,6 +77,11 @@ public class PlayerController : MonoBehaviour {
                 guiManager.ShowInventory(true);
             }
         }
+    }
+
+    public void HoldItem(Sprite sprite)
+    {
+            handSlot.sprite = sprite;                          
     }
 
     private void UpdateMovement()
