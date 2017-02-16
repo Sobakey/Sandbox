@@ -29,7 +29,7 @@ public class WorldGenerator : MonoBehaviour {
 
     private void SpawnBlocks(Chunk chunk)
     {
-        GameObject parentBlocks = new GameObject("blocks");
+        //GameObject parentBlocks = new GameObject("blocks");
             
         for (int x = 0; x < Chunk.size; x++)
         {
@@ -39,22 +39,19 @@ public class WorldGenerator : MonoBehaviour {
                 {
                     GameObject block_GameObject = new GameObject();
 
-                    block_GameObject.transform.parent = parentBlocks.transform;
+                    //block_GameObject.transform.parent = parentBlocks.transform;
                     SpriteRenderer sr = block_GameObject.AddComponent<SpriteRenderer>();
                     sr.sprite = chunk.blocks[x, y].sprite;
                     block_GameObject.name = chunk.blocks[x, y].display_name;
                     block_GameObject.tag = "Block";
                     block_GameObject.transform.position = new Vector3((chunk.position*Chunk.size)+x, y);
-                    chunk.blockObjects[x, y] = block_GameObject;
-                    if (chunk.blocks[x,y].isSolid == true)
-                    {
-                    BoxCollider2D bcs = block_GameObject.AddComponent<BoxCollider2D>();
-                    }
-                    else
-                    {
                     BoxCollider2D bc = block_GameObject.AddComponent<BoxCollider2D>();
-                    bc.isTrigger = true;
-                    block_GameObject.tag = "tall_grass";
+                    chunk.blockObjects[x, y] = block_GameObject;
+
+                    if (chunk.blocks[x,y].isSolid != true)
+                    {                   
+                        bc.isTrigger = true;
+                        block_GameObject.tag = "tall_grass";
                     }
                     
                 }
@@ -130,8 +127,7 @@ public class WorldGenerator : MonoBehaviour {
                 {
                     if (grass.transform.position.x == block.transform.position.x)
                     {
-                        Debug.Log("с травой");
-                        GameObject.Destroy(grass);
+                        GameObject.Destroy(grass); //without tall_grass
                         chunk.blocks[x, y+1] = blockManager.FindBlock(0);
                         GameObject.Destroy(block);
                     }
@@ -140,33 +136,31 @@ public class WorldGenerator : MonoBehaviour {
                 
             }
             else
-            {
-                Debug.Log("без травы");
-                chunk.blocks[x, y] = blockManager.FindBlock(0);
+            {              
+                chunk.blocks[x, y] = blockManager.FindBlock(0); //without tall_grass
                 GameObject.Destroy(block);
             }
     
         }
         else
         {
-        chunk.blocks[x, y] = blockManager.FindBlock(0);
-        GameObject.Destroy(block);
-        Debug.Log("иное");
-         
+            chunk.blocks[x, y] = blockManager.FindBlock(0);
+            GameObject.Destroy(block);     
         }
     }
 
     void Update () {
-        //TODO fix bug with chunk generation on view distance
-        int playerChunk = Mathf.FloorToInt(player.transform.position.x/(Chunk.size/2));
+        int playerChunk = Mathf.FloorToInt(player.transform.position.x/Chunk.size);
 
-        for (int i = playerChunk - viewDistance; i < playerChunk +viewDistance; i++)
+        for (int i = playerChunk - viewDistance; i < playerChunk + viewDistance; i++)
         {
             bool spawn = true;
+
             foreach (Chunk chunk in chunks)
             {
                 if (chunk.position == i)
                 {
+
                     spawn = false;
                 }
             }
