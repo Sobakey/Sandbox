@@ -99,7 +99,7 @@ public class WorldGenerator : MonoBehaviour {
                     {
                     BoxCollider2D bc = block_GameObject.AddComponent<BoxCollider2D>();
                     bc.isTrigger = true;
-
+                    block_GameObject.tag = "tall_grass";
                     }
                 }
               
@@ -111,20 +111,27 @@ public class WorldGenerator : MonoBehaviour {
     {
         int x = (int)block.transform.position.x;
         int y = (int)block.transform.position.y;
-        GameObject tallGrass = GameObject.Find("tall_grass");
+        GameObject[] tallGrass;
 
 
         if (block.name == "grass")
         {
-          
+            tallGrass = GameObject.FindGameObjectsWithTag("tall_grass");
 
             if (blocks[x,y+1] != null )
             {
-                Debug.Log("с травой");
-                GameObject.Destroy(GameObject.Find("tall_grass"));
-                blocks[x, y+1] = blockManager.FindBlock(0);
-               //TODO удалить блок с травой
-                GameObject.Destroy(block);
+                foreach (GameObject grass in tallGrass)
+                {
+                    if (grass.transform.position.x == block.transform.position.x)
+                    {
+                        Debug.Log("с травой");
+                        GameObject.Destroy(grass);
+                        blocks[x, y+1] = blockManager.FindBlock(0);
+                        GameObject.Destroy(block);
+                    }
+
+                }
+                
             }
             else
             {
