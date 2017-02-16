@@ -5,95 +5,48 @@ using UnityEngine;
 public class WorldGenerator : MonoBehaviour {
 
     public GameObject player;
-    public int chunkSize = 64;
-    public float pMod = 0.05f;
-    public float pHeightMod = 10f;
-    public float heightMod = 20f;
+    public static int chunkHeight = 64;
+    public int viewDistance = 3;
 
     private BlockManager blockManager;
-    private Block[,] blocks;
+    private List<Chunk> chunks;
     private ItemDatabase itemDatabase;
 
 	void Start () {
         blockManager = GameObject.Find("GameManager").GetComponent<BlockManager>();
         itemDatabase = GameObject.Find("GameManager").GetComponent<ItemDatabase>();
-        blocks = new Block[chunkSize, chunkSize];
-
-        GenerateBlocks();
-        SpawnBlocks();
+        chunks = new List<Chunk>();
+        player = SpawnPlayer(Chunk.size/2, chunkHeight/2 + 2);
 	}
 	
-    private void GenerateBlocks()
-    {
-        float seed = Random.Range(0.1f,3.9f);
+   
 
-        int playerSpawnX = Random.Range(0,chunkSize);
-        for (int x = 0; x < chunkSize; x++)
-        {
-            float pValue = Mathf.PerlinNoise(x* pMod  + seed, 5* pMod + seed);
-            int pHeight = Mathf.RoundToInt(pValue * pHeightMod + heightMod);
-
-            for (int y = 0; y < chunkSize; y++)
-            {
-                if (y <= pHeight)
-                {
-                    if (y == pHeight - 1)
-                    {
-                        blocks[x, y] = blockManager.FindBlock(1); //grass
-                    }
-                    else if (y == pHeight)
-                    {
-                        if (Random.value < 0.4f)
-                        {
-                          blocks[x, y] = blockManager.FindBlock(4); //tall_grass
-                        }
-                    }
-                    else if (y < pHeight - Random.Range(4,16) || y > pHeight - 1)
-                    {
-                        blocks[x, y] = blockManager.FindBlock(3); //dirt
-                    }
-                    else
-                    {
-                        blocks[x, y] = blockManager.FindBlock(2); //stone
-                    }
-                    
-                }
-                else
-                {
-                    blocks[x, y] = blockManager.FindBlock(0);
-                }
-            }
-            if (x == playerSpawnX)
-            {
-                SpawnPlayer(x,pHeight +1);
-            }
-        }
-    }
-
-    private void SpawnPlayer(float x , float y)
+    private GameObject SpawnPlayer(float x , float y)
     {
        GameObject player_object =  GameObject.Instantiate(player,new Vector3(x,y),Quaternion.identity) as GameObject;
+        return player_object;
     }
 
-    private void SpawnBlocks()
+    private void SpawnBlocks(Chunk chunk)
     {
         GameObject parentBlocks = new GameObject("blocks");
             
-        for (int x = 0; x < chunkSize; x++)
+        for (int x = 0; x < Chunk.size; x++)
         {
-            for (int y = 0; y < chunkSize; y++)
+            for (int y = 0; y < chunkHeight; y++)
             {
-                if (blocks[x,y]!=null)
+                if (chunk.blocks[x,y]!=null)
                 {
                     GameObject block_GameObject = new GameObject();
 
                     block_GameObject.transform.parent = parentBlocks.transform;
                     SpriteRenderer sr = block_GameObject.AddComponent<SpriteRenderer>();
-                    sr.sprite = blocks[x, y].sprite;
-                    block_GameObject.name = blocks[x, y].display_name;
+                    sr.sprite = chunk.blocks[x, y].sprite;
+                    block_GameObject.name = chunk.blocks[x, y].display_name;
                     block_GameObject.tag = "Block";
-                    block_GameObject.transform.position = new Vector3(x, y);
-                    if (blocks[x,y].isSolid == true)
+                    block_GameObject.transform.position = new Vector3((chunk.position*Chunk.size)+x, y);
+                    chunk.blockObjects[x, y] = block_GameObject;
+                    if (chunk.blocks[x,y].isSolid == true)
                     {
                     BoxCollider2D bcs = block_GameObject.AddComponent<BoxCollider2D>();
                     }
@@ -103,18 +56,55 @@ public class WorldGenerator : MonoBehaviour {
                     bc.isTrigger = true;
                     block_GameObject.tag = "tall_grass";
                     }
+                    
                 }
               
             }
         }
     }
 
-  public void DestroyBlock(GameObject block)
+    private Chunk ChunkAtPos(float x)
     {
-        int x = (int)block.transform.position.x;
-        int y = (int)block.transform.position.y;
+        int chunkIndex = Mathf.FloorToInt(x / Chunk.size);
 
-        foreach (Drop drop in blocks[x,y].drops)
+        foreach (Chunk chunk in chunks)
+        {
+            if (chunk.position == chunkIndex)
+            {
+                return chunk;
+            }
+        }
+         
+        return null;
+    }
+
+    public Vector2 WorldPosToChunkPos(float x, float y)
+    {
+        int xPos = Mathf.RoundToInt(x - (ChunkAtPos(x).position * Chunk.size));
+        int yPos = Mathf.RoundToInt(y);
+
+        return new Vector2(xPos, yPos);
+    }
+
+    public Vector2 ChunkPosToWorldPos(int x, int y, int chunkPos)
+    {
+        int xPos = Mathf.FloorToInt(x + (chunkPos * Chunk.size));
+        int yPos = Mathf.FloorToInt(y);
+
+        return new Vector2(xPos, yPos);
+    }
+
+    public void DestroyBlock(GameObject block)
+    {
+        Vector3 blockPos = block.transform.position;
+        Vector2 chunkPos = WorldPosToChunkPos(blockPos.x, blockPos.y);
+
+        int x = (int)chunkPos.x;
+        int y = (int)chunkPos.y;
+
+        Chunk chunk = ChunkAtPos(blockPos.x);
+
+        foreach (Drop drop in chunk.blocks[x,y].drops)
         {
             if (drop.DropChanceSucess())
             {
@@ -134,7 +124,7 @@ public class WorldGenerator : MonoBehaviour {
         {
             GameObject[] tallGrass = GameObject.FindGameObjectsWithTag("tall_grass");
 
-            if (blocks[x,y+1] != null )
+            if (chunk.blocks[x,y+1] != null )
             {
                 foreach (GameObject grass in tallGrass)
                 {
@@ -142,7 +132,7 @@ public class WorldGenerator : MonoBehaviour {
                     {
                         Debug.Log("с травой");
                         GameObject.Destroy(grass);
-                        blocks[x, y+1] = blockManager.FindBlock(0);
+                        chunk.blocks[x, y+1] = blockManager.FindBlock(0);
                         GameObject.Destroy(block);
                     }
 
@@ -152,22 +142,52 @@ public class WorldGenerator : MonoBehaviour {
             else
             {
                 Debug.Log("без травы");
-                blocks[x, y] = blockManager.FindBlock(0);
+                chunk.blocks[x, y] = blockManager.FindBlock(0);
                 GameObject.Destroy(block);
             }
     
         }
         else
         {
-        blocks[x, y] = blockManager.FindBlock(0);
+        chunk.blocks[x, y] = blockManager.FindBlock(0);
         GameObject.Destroy(block);
         Debug.Log("иное");
-
+         
         }
     }
 
-    // Update is called once per frame
     void Update () {
-		
+        //TODO fix bug with chunk generation on view distance
+        int playerChunk = Mathf.FloorToInt(player.transform.position.x/(Chunk.size/2));
+
+        for (int i = playerChunk - viewDistance; i < playerChunk +viewDistance; i++)
+        {
+            bool spawn = true;
+            foreach (Chunk chunk in chunks)
+            {
+                if (chunk.position == i)
+                {
+                    spawn = false;
+                }
+            }
+
+            if (spawn)
+            {
+                Chunk newChunk = new Chunk(blockManager, i);
+                newChunk.GenerateBlocks();
+                SpawnBlocks(newChunk);
+                chunks.Add(newChunk);
+            }
+        }
+
+        foreach (Chunk chunk in chunks)
+        {
+            if (chunk.position < playerChunk - viewDistance || chunk.position > playerChunk + viewDistance)
+            {
+                chunk.Destroy();
+                chunks.Remove(chunk);
+                break;
+            }
+        }
 	}
 }

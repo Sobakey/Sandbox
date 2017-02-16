@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
-
+    //TODO fix replacement stacks items on slots
     public int slotCount = 3 * 9;
     public Item.ItemStack[] itemStacks;
 
