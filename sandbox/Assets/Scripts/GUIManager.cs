@@ -9,6 +9,7 @@ public class GUIManager : MonoBehaviour {
     public bool isInventoryOpen = false;
     public Image[] slots;
     public GameObject slotPrefab;
+    public Image grayOut;
 
     private Inventory playerInventoryScript;
     private GameObject cursorIcon;
@@ -63,6 +64,7 @@ public class GUIManager : MonoBehaviour {
 
     public void ShowInventory(bool value)
     {
+        grayOut.color = value ? new Color(0, 0, 0, 0.75f) : new Color(0, 0, 0, 0);
         playerInventory.gameObject.SetActive(value);
         isInventoryOpen = value;
     }
@@ -114,21 +116,15 @@ public class GUIManager : MonoBehaviour {
             Item.ItemStack itemStack = playerInventoryScript.itemStacks[i];
             if (itemStack != null)
             {
-                if (slots[i].color.a != 1)
-                {
                     slots[i].color = new Color(1,1,1,1);
                     slots[i].sprite = itemStack.item.sprite;
                     slots[i].transform.GetChild(0).GetComponent<Text>().text = itemStack.stackSize.ToString();
-                }
             }
             else
             {
-                if (slots[i].color.a != 0)
-                {
                     slots[i].color = new Color(1, 1, 1, 0);
                     slots[i].sprite = null;
                     slots[i].transform.GetChild(0).GetComponent<Text>().text = "";
-                }
             }
         }
     }
