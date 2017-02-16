@@ -12,9 +12,11 @@ public class WorldGenerator : MonoBehaviour {
 
     private BlockManager blockManager;
     private Block[,] blocks;
+    private ItemDatabase itemDatabase;
 
 	void Start () {
         blockManager = GameObject.Find("GameManager").GetComponent<BlockManager>();
+        itemDatabase = GameObject.Find("GameManager").GetComponent<ItemDatabase>();
         blocks = new Block[chunkSize, chunkSize];
 
         GenerateBlocks();
@@ -23,12 +25,12 @@ public class WorldGenerator : MonoBehaviour {
 	
     private void GenerateBlocks()
     {
-        float seed = Random.Range(0.1f,1.9f);
+        float seed = Random.Range(0.1f,3.9f);
 
         int playerSpawnX = Random.Range(0,chunkSize);
         for (int x = 0; x < chunkSize; x++)
         {
-            float pValue = Mathf.PerlinNoise(x* pMod + seed, 5*pMod + seed);
+            float pValue = Mathf.PerlinNoise(x* pMod  + seed, 5* pMod + seed);
             int pHeight = Mathf.RoundToInt(pValue * pHeightMod + heightMod);
 
             for (int y = 0; y < chunkSize; y++)
@@ -111,12 +113,26 @@ public class WorldGenerator : MonoBehaviour {
     {
         int x = (int)block.transform.position.x;
         int y = (int)block.transform.position.y;
-        GameObject[] tallGrass;
 
+        foreach (Drop drop in blocks[x,y].drops)
+        {
+            if (drop.DropChanceSucess())
+            {
+                GameObject dropObject = new GameObject();
+                dropObject.transform.position = block.transform.position;
+                dropObject.transform.localScale = new Vector3(0.5f,0.5f,0.5f);
+                dropObject.AddComponent<SpriteRenderer>().sprite = itemDatabase.FindItem(drop.itemName).sprite;
+                dropObject.AddComponent<PolygonCollider2D>();
+                dropObject.AddComponent<Rigidbody2D>();
+                dropObject.layer = 10;
+                dropObject.AddComponent<Magnetism>().target = GameObject.FindWithTag("player").transform;
+                dropObject.name = drop.itemName;
+            }
+        }
 
         if (block.name == "grass")
         {
-            tallGrass = GameObject.FindGameObjectsWithTag("tall_grass");
+            GameObject[] tallGrass = GameObject.FindGameObjectsWithTag("tall_grass");
 
             if (blocks[x,y+1] != null )
             {

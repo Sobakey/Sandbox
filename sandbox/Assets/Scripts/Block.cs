@@ -8,5 +8,5 @@ public class Block {
     public byte id;
     public Sprite sprite;
     public bool isSolid = true;
-
+    public Drop[] drops;
 }

@@ -62,9 +62,12 @@ public class Inventory : MonoBehaviour
     {
         foreach (Item.ItemStack i in itemStacks)
         {
-            if (i.item.name == name)
+            if (i != null)
             {
-                return i;
+                if (i.item.name == name)
+                {
+                    return i;
+                }
             }
         }
 
@@ -75,11 +78,14 @@ public class Inventory : MonoBehaviour
     {
         foreach (Item.ItemStack i in itemStacks)
         {
-            if (i.item.name == name)
+            if (i != null)
             {
-                if (i.stackSize + count <= i.item.maxStack)
+                if (i.item.name == name)
                 {
-                    return i;
+                    if (i.stackSize + count <= i.item.maxStack)
+                    {
+                        return i;
+                    }
                 }
             }
         }

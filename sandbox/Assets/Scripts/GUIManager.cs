@@ -38,10 +38,18 @@ public class GUIManager : MonoBehaviour {
                 {
                     if (isMouseOverSlot(i))
                     {
-                        if (playerInventoryScript.itemStacks[i] != null)
+                        if (cursorStack == null)
                         {
-                            cursorStack = playerInventoryScript.itemStacks[i];
-                            playerInventoryScript.itemStacks[i] = null;
+                            if (playerInventoryScript.itemStacks[i] != null)
+                            {
+                                cursorStack = playerInventoryScript.itemStacks[i];
+                                playerInventoryScript.itemStacks[i] = null;
+                            }
+                        }
+                        else
+                        {
+                            playerInventoryScript.itemStacks[i] = cursorStack;
+                            cursorStack = null;
                         }
                     }
                 }

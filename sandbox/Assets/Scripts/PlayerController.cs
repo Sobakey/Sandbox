@@ -9,15 +9,19 @@ public class PlayerController : MonoBehaviour {
     public KeyCode leftKey, rightKey, jumpKey, InventoryKey;
     public float movementSpeed = 3f;
     public float jumpForce = 250f;
+    public LayerMask groundLayer;
+    public float groundCheckDistance = 0.30f;
 
     private Rigidbody2D rb;
     private Animator anim;
     private GUIManager guiManager;
+    private Transform groundCheck;
 	
 	void Start () {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         guiManager = GameObject.Find("GUI").GetComponent<GUIManager>();
+        groundCheck = transform.FindChild("Ground_Checker");
 	}
 	
 	
@@ -25,7 +29,12 @@ public class PlayerController : MonoBehaviour {
         UpdateControls();
         UpdateMovement();
         UpdateBreaking();
+    }
 
+    private bool IsGrounded()
+    {
+        RaycastHit2D hit = Physics2D.Raycast(groundCheck.position,Vector2.down,groundCheckDistance,groundLayer);
+        return hit.collider != null;
     }
 
     private void SetDirection(int dir)
@@ -51,7 +60,7 @@ public class PlayerController : MonoBehaviour {
             anim.SetBool("isWalking", false);
         }
 
-        if (Input.GetKeyDown(jumpKey))
+        if (Input.GetKeyDown(jumpKey) && IsGrounded())
         {
             Jump();
         }
