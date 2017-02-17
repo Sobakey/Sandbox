@@ -106,6 +106,7 @@ public class WorldGenerator : MonoBehaviour {
         Vector2 chunkPos = WorldPosToChunkPos(blockPos.x, blockPos.y);
 
         SpriteRenderer sr = block_down.GetComponent<SpriteRenderer>();
+        sr.material = mat;
 
         int x = (int)chunkPos.x;
         int y = (int)chunkPos.y;
@@ -140,7 +141,7 @@ public class WorldGenerator : MonoBehaviour {
                     {
                         GameObject.Destroy(grass); //with tall_grass
                         chunk.blocks[x, y+1] = blockManager.FindBlock(0);
-                        sr.material = mat;
+
                         GameObject.Destroy(block);
                     }
 
@@ -150,7 +151,7 @@ public class WorldGenerator : MonoBehaviour {
             else
             {              
                 chunk.blocks[x, y] = blockManager.FindBlock(0); //without tall_grass
-                sr.material = mat;
+
                 GameObject.Destroy(block);
             }
     
@@ -158,7 +159,7 @@ public class WorldGenerator : MonoBehaviour {
         else
         {
             chunk.blocks[x, y] = blockManager.FindBlock(0);
-            sr.material = mat;
+
             GameObject.Destroy(block);     
         }
     }

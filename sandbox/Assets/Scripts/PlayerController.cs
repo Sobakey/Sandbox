@@ -98,6 +98,11 @@ public class PlayerController : MonoBehaviour {
             RaycastHit2D hit_down = Physics2D.Raycast(new Vector2 (pos.x,pos.y-1), transform.position - pos, 0.1f);
             if (hit.collider != null)
             {
+                if (hit_down.collider == null)
+                {
+                    hit_down = hit;
+                }
+
                 if (hit.collider.gameObject.tag == "Block" || hit.collider.gameObject.tag == "tall_grass")
                 {
                     GameObject.Find("World").GetComponent<WorldGenerator>().DestroyBlock(hit.collider.gameObject, hit_down.collider.gameObject);
