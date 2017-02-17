@@ -94,9 +94,11 @@ public class PlayerController : MonoBehaviour {
         if (Input.GetMouseButtonDown(0))
         {
             Vector3 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            RaycastHit2D hit_up = Physics2D.Raycast(new Vector2(pos.x, pos.y + 1), transform.position - pos, 0.1f);
             RaycastHit2D hit = Physics2D.Raycast(pos, transform.position - pos,0.1f);
             RaycastHit2D hit_down = Physics2D.Raycast(new Vector2 (pos.x,pos.y-1), transform.position - pos, 0.1f);
-            if (hit.collider != null)
+
+            if (hit.collider != null && (hit_up.collider == null || hit_up.collider.gameObject.tag == "tall_grass"))
             {
                 if (hit_down.collider == null)
                 {
