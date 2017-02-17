@@ -68,15 +68,20 @@ public class Chunk  {
 
     public void Destroy()
     {      //TODO destroy parent object
+		Transform parentObj = null;;
         for (int x = 0; x < size; x++)
         {
             for (int y = 0; y < WorldGenerator.chunkHeight; y++)
             {
+				
+				if (parentObj == null) {
+					parentObj = blockObjects [x, y].transform.parent;
+				}
                 blocks[x, y] = null;
                 GameObject.Destroy(blockObjects[x, y]);
             }
         }
-        //GameObject.Destroy(blockObjects[size - 1, WorldGenerator.chunkHeight - 1].transform.parent.gameObject);
+        GameObject.Destroy(parentObj.gameObject);
 
     }
 
