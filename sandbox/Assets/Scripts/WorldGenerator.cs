@@ -100,10 +100,12 @@ public class WorldGenerator : MonoBehaviour {
         return new Vector2(xPos, yPos);
     }
 
-    public void DestroyBlock(GameObject block)
+    public void DestroyBlock(GameObject block, GameObject block_down)
     {
         Vector3 blockPos = block.transform.position;
         Vector2 chunkPos = WorldPosToChunkPos(blockPos.x, blockPos.y);
+
+        SpriteRenderer sr = block_down.GetComponent<SpriteRenderer>();
 
         int x = (int)chunkPos.x;
         int y = (int)chunkPos.y;
@@ -136,8 +138,9 @@ public class WorldGenerator : MonoBehaviour {
                 {
                     if (grass.transform.position.x == block.transform.position.x)
                     {
-                        GameObject.Destroy(grass); //without tall_grass
+                        GameObject.Destroy(grass); //with tall_grass
                         chunk.blocks[x, y+1] = blockManager.FindBlock(0);
+                        sr.material = mat;
                         GameObject.Destroy(block);
                     }
 
@@ -147,6 +150,7 @@ public class WorldGenerator : MonoBehaviour {
             else
             {              
                 chunk.blocks[x, y] = blockManager.FindBlock(0); //without tall_grass
+                sr.material = mat;
                 GameObject.Destroy(block);
             }
     
@@ -154,6 +158,7 @@ public class WorldGenerator : MonoBehaviour {
         else
         {
             chunk.blocks[x, y] = blockManager.FindBlock(0);
+            sr.material = mat;
             GameObject.Destroy(block);     
         }
     }
