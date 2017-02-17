@@ -9,6 +9,7 @@ public class WorldGenerator : MonoBehaviour {
     public int viewDistance = 3;
 	public Material mat;
 	public Material matDark;
+    public Material matBG;
 
     private BlockManager blockManager;
     private List<Chunk> chunks;
@@ -100,13 +101,35 @@ public class WorldGenerator : MonoBehaviour {
         return new Vector2(xPos, yPos);
     }
 
+    private void srdr(GameObject block)
+    {
+        BoxCollider2D bc = block.GetComponent<BoxCollider2D>();
+        bc.enabled = false;
+        SpriteRenderer srBG = block.GetComponent<SpriteRenderer>();
+        srBG.material = matBG;
+    }
+
     public void DestroyBlock(GameObject block, GameObject block_down)
     {
+       
+
+        //if (block.gameObject.tag != "tall_grass")
+        //{
+            //BoxCollider2D bc = block.GetComponent<BoxCollider2D>();
+            //bc.enabled = false;
+            //SpriteRenderer srBG = block.GetComponent<SpriteRenderer>();
+            //srBG.material = matBG;
+            //Debug.Log("srBG   "+srBG.material.name);
+        //}
+           
         Vector3 blockPos = block.transform.position;
         Vector2 chunkPos = WorldPosToChunkPos(blockPos.x, blockPos.y);
 
         SpriteRenderer sr = block_down.GetComponent<SpriteRenderer>();
         sr.material = mat;
+       // Debug.Log("sr   " + sr.material.name);
+
+
 
         int x = (int)chunkPos.x;
         int y = (int)chunkPos.y;
@@ -139,10 +162,12 @@ public class WorldGenerator : MonoBehaviour {
                 {
                     if (grass.transform.position.x == block.transform.position.x)
                     {
+                        
                         GameObject.Destroy(grass); //with tall_grass
+                        block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, block.transform.position.z+1);
+                        srdr(block);
                         chunk.blocks[x, y+1] = blockManager.FindBlock(0);
-
-                        GameObject.Destroy(block);
+                        //GameObject.Destroy(block);
                     }
 
                 }
@@ -150,17 +175,22 @@ public class WorldGenerator : MonoBehaviour {
             }
             else
             {              
+                block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, block.transform.position.z + 1);
+                srdr(block);
                 chunk.blocks[x, y] = blockManager.FindBlock(0); //without tall_grass
-
-                GameObject.Destroy(block);
+                //GameObject.Destroy(block);
             }
     
         }
         else
         {
+            block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, block.transform.position.z + 1);
+            srdr(block);
             chunk.blocks[x, y] = blockManager.FindBlock(0);
-
-            GameObject.Destroy(block);     
+            if (block.gameObject.tag == "tall_grass")
+            { 
+                 GameObject.Destroy(block);
+            }  
         }
     }
 
