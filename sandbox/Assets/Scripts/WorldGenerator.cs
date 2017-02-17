@@ -7,6 +7,8 @@ public class WorldGenerator : MonoBehaviour {
     public GameObject player;
     public static int chunkHeight = 64;
     public int viewDistance = 3;
+	public Material mat;
+	public Material matDark;
 
     private BlockManager blockManager;
     private List<Chunk> chunks;
@@ -45,6 +47,13 @@ public class WorldGenerator : MonoBehaviour {
                     block_GameObject.name = chunk.blocks[x, y].display_name;
                     block_GameObject.tag = "Block";
                     block_GameObject.transform.position = new Vector3((chunk.position*Chunk.size)+x, y);
+					sr.material = mat;
+
+
+					if (chunk.blocks[x, y+1] != null && chunk.blocks[x,y+1].isSolid) {
+						sr.material = matDark;
+					}
+
                     BoxCollider2D bc = block_GameObject.AddComponent<BoxCollider2D>();
                     chunk.blockObjects[x, y] = block_GameObject;
 

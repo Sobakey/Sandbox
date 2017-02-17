@@ -24,7 +24,7 @@ public class Chunk  {
     }
 
     public void GenerateBlocks()
-    {
+    {  //TODO tune seed
         float seed = 0;// Random.Range(0.1f, 30.9f);
 
         for (int x = 0; x < size; x++)
@@ -67,7 +67,7 @@ public class Chunk  {
     }
 
     public void Destroy()
-    {      //TODO destroy parent object
+    {  
 		Transform parentObj = null;;
         for (int x = 0; x < size; x++)
         {
