@@ -29,8 +29,8 @@ public class GUIManager : MonoBehaviour {
         }
 
         RenderCursorStack();
-        
 
+        //TODO drag and drop when button  held down
         if (isInventoryOpen)
         {           
             if (Input.GetMouseButtonDown(0))
@@ -58,9 +58,8 @@ public class GUIManager : MonoBehaviour {
 
             RenderSlots();
         }
-       
-
     }
+
 
     public void ShowInventory(bool value)
     {
