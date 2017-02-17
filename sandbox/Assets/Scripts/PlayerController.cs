@@ -90,7 +90,7 @@ public class PlayerController : MonoBehaviour {
     }
 
     private void UpdateBreaking()
-    {
+    { //TODO set destroy radius
         if (Input.GetMouseButtonDown(0))
         {
             Vector3 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);

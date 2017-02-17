@@ -29,7 +29,7 @@ public class WorldGenerator : MonoBehaviour {
 
     private void SpawnBlocks(Chunk chunk)
     {
-        //GameObject parentBlocks = new GameObject("blocks");
+        GameObject parentBlocks = new GameObject();
             
         for (int x = 0; x < Chunk.size; x++)
         {
@@ -38,8 +38,8 @@ public class WorldGenerator : MonoBehaviour {
                 if (chunk.blocks[x,y]!=null)
                 {
                     GameObject block_GameObject = new GameObject();
-
-                    //block_GameObject.transform.parent = parentBlocks.transform;
+                    block_GameObject.transform.SetParent(parentBlocks.transform);
+                    parentBlocks.name = "chunk " + ChunkPosToWorldPos(x,y,chunk.position);
                     SpriteRenderer sr = block_GameObject.AddComponent<SpriteRenderer>();
                     sr.sprite = chunk.blocks[x, y].sprite;
                     block_GameObject.name = chunk.blocks[x, y].display_name;
