@@ -69,6 +69,7 @@ public class Chunk  {
     public void Destroy()
     {
         //TODO убирать в память чанки и обьекты на них
+        Transform parentObj = null;
         for (int x = 0; x < size; x++)
         {
             for (int y = 0; y < WorldGenerator.chunkHeight; y++)
