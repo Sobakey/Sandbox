@@ -75,10 +75,10 @@ namespace Light2D
             _meshRenderer = GetComponent<MeshRenderer>();
             _meshFilter = GetComponent<MeshFilter>();
 
-            if (!_meshRenderer)
+            if (_meshRenderer == null)
                 _meshRenderer = gameObject.AddComponent<MeshRenderer>();
 
-            if (!_meshFilter)
+            if (_meshFilter == null)
                 _meshFilter = gameObject.AddComponent<MeshFilter>();
 
 #if UNITY_EDITOR

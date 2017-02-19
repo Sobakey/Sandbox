@@ -21,7 +21,8 @@ public class CameraController : MonoBehaviour {
             player = GameObject.FindWithTag("player");
           
         }
-        transform.position = player.transform.position;
+        //Камера должна быть всегда самой ближней по оси Z
+        transform.position = player.transform.position - Vector3.forward;
        
 	}
 }

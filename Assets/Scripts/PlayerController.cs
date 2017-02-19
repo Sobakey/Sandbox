@@ -21,7 +21,8 @@ public class PlayerController : MonoBehaviour {
 	void Start () {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        guiManager = GameObject.Find("GUI").GetComponent<GUIManager>();
+        // guiManager = GameObject.Find("GUI").GetComponent<GUIManager>();
+        guiManager = null;
         groundCheck = transform.FindChild("Ground_Checker");
 	}
 	

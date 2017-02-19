@@ -43,15 +43,16 @@ public class WorldGenerator : MonoBehaviour {
                     GameObject block_GameObject = new GameObject("Block");
                     block_GameObject.transform.SetParent(parentBlocks.transform);
                     parentBlocks.name = "chunk " + ChunkPosToWorldPos(x,y,chunk.position);
-                   // SpriteRenderer sr = block_GameObject.AddComponent<SpriteRenderer>();
-                   // sr.sprite = chunk.blocks[x, y].sprite;
+                    SpriteRenderer sr = block_GameObject.AddComponent<SpriteRenderer>();
+                    sr.sprite = chunk.blocks[x, y].sprite;
                     block_GameObject.name = chunk.blocks[x, y].display_name;
                     block_GameObject.tag = "Block";
                     block_GameObject.transform.position = new Vector3((chunk.position*Chunk.size)+x, y);
-					//sr.material = mat;
-                    var loSprite = block_GameObject.AddComponent<LightObstacleSprite>();
-                    loSprite.Sprite = chunk.blocks[x, y].sprite;
-
+                    sr.material = matDark;
+                    if(LightingSystem.Instance.isActiveAndEnabled){
+                    var loGenerator = block_GameObject.AddComponent<LightObstacleGenerator>();
+                    loGenerator.Material = matDark;
+                    }
 					// if (chunk.blocks[x, y+1] != null && chunk.blocks[x,y+1].isSolid) {
 					// 	sr.material = matDark;
 					// }
@@ -106,8 +107,9 @@ public class WorldGenerator : MonoBehaviour {
     {
         BoxCollider2D bc = block.GetComponent<BoxCollider2D>();
         bc.enabled = false;
-        SpriteRenderer srBG = block.GetComponent<SpriteRenderer>();
-        srBG.material = matBG;
+        Destroy(block.transform.GetChild(0).gameObject);
+        // SpriteRenderer srBG = block.GetComponent<SpriteRenderer>();
+        // srBG.material = matBG;
     }
 
     public void DestroyBlock(GameObject block, GameObject block_down)
@@ -126,8 +128,8 @@ public class WorldGenerator : MonoBehaviour {
         Vector3 blockPos = block.transform.position;
         Vector2 chunkPos = WorldPosToChunkPos(blockPos.x, blockPos.y);
 
-        SpriteRenderer sr = block_down.GetComponent<SpriteRenderer>();
-        sr.material = mat;
+        // SpriteRenderer sr = block_down.GetComponent<SpriteRenderer>();
+        // sr.material = mat;
        // Debug.Log("sr   " + sr.material.name);
 
 

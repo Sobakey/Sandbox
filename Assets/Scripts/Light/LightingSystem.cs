@@ -156,7 +156,7 @@ namespace Light2D
                 else{
                     LightCamera = cameraComponent;
                 }
-                LightCamera.backgroundColor = Color.black;
+                LightCamera.backgroundColor = new Color(0,0,0,1);
                 LightCamera.orthographic = true;
             }
         }
@@ -358,7 +358,7 @@ namespace Light2D
             //RenderNormalBuffer();
             RenderLightSources();
             //RenderLightSourcesBlur();
-            RenderAmbientLight();
+            //RenderAmbientLight();
             RenderLightOverlay(src, dest);
         }
 
@@ -699,7 +699,6 @@ namespace Light2D
             _aditionalAmbientLightCycles = 0;
             UnityEngine.Profiling.Profiler.EndSample();
         }
-
         private void RenderLightOverlay(RenderTexture src, RenderTexture dest)
         {
             UnityEngine.Profiling.Profiler.BeginSample("LightingSystem.OnRenderImage Light Overlay");
