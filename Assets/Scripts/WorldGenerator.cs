@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Light2D;
 public class WorldGenerator : MonoBehaviour {
 
     public GameObject player;
@@ -40,20 +40,21 @@ public class WorldGenerator : MonoBehaviour {
             {
                 if (chunk.blocks[x,y]!=null)
                 {
-                    GameObject block_GameObject = new GameObject();
+                    GameObject block_GameObject = new GameObject("Block");
                     block_GameObject.transform.SetParent(parentBlocks.transform);
                     parentBlocks.name = "chunk " + ChunkPosToWorldPos(x,y,chunk.position);
-                    SpriteRenderer sr = block_GameObject.AddComponent<SpriteRenderer>();
-                    sr.sprite = chunk.blocks[x, y].sprite;
+                   // SpriteRenderer sr = block_GameObject.AddComponent<SpriteRenderer>();
+                   // sr.sprite = chunk.blocks[x, y].sprite;
                     block_GameObject.name = chunk.blocks[x, y].display_name;
                     block_GameObject.tag = "Block";
                     block_GameObject.transform.position = new Vector3((chunk.position*Chunk.size)+x, y);
-					sr.material = mat;
+					//sr.material = mat;
+                    var loSprite = block_GameObject.AddComponent<LightObstacleSprite>();
+                    loSprite.Sprite = chunk.blocks[x, y].sprite;
 
-
-					if (chunk.blocks[x, y+1] != null && chunk.blocks[x,y+1].isSolid) {
-						sr.material = matDark;
-					}
+					// if (chunk.blocks[x, y+1] != null && chunk.blocks[x,y+1].isSolid) {
+					// 	sr.material = matDark;
+					// }
 
                     BoxCollider2D bc = block_GameObject.AddComponent<BoxCollider2D>();
                     chunk.blockObjects[x, y] = block_GameObject;
