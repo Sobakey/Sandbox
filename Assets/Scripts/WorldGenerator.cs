@@ -49,11 +49,11 @@ public class WorldGenerator : MonoBehaviour {
                     block_GameObject.tag = "Block";
                     block_GameObject.transform.position = new Vector3((chunk.position*Chunk.size)+x, y);
 					sr.material = mat;
-
-
-					if (chunk.blocks[x, y+1] != null && chunk.blocks[x,y+1].isSolid) {
-						sr.material = matDark;
-					}
+                    var loGen = block_GameObject.AddComponent<Light2D.LightObstacleGenerator>();
+                    loGen.Material = mat;
+					// if (chunk.blocks[x, y+1] != null && chunk.blocks[x,y+1].isSolid) {
+					// 	sr.material = matDark;
+					// }
 
                     BoxCollider2D bc = block_GameObject.AddComponent<BoxCollider2D>();
                     chunk.blockObjects[x, y] = block_GameObject;
@@ -152,6 +152,7 @@ public class WorldGenerator : MonoBehaviour {
         bc.enabled = false;
         SpriteRenderer srBG = block.GetComponent<SpriteRenderer>();
         srBG.material = matBG;
+        Destroy(block.transform.GetChild(0).gameObject);
     }
 
     public void DestroyBlock(GameObject block, GameObject block_down)
