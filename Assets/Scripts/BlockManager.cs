@@ -16,4 +16,16 @@ public class BlockManager : MonoBehaviour {
         }
         return null;
     }
+
+    public Block FindBlock(string name)
+    {
+        foreach (Block block in blocks)
+        {
+            if (block.display_name == name)
+            {
+                return block;
+            }
+        }
+        return null;
+    }
 }

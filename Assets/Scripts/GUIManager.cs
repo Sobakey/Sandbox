@@ -23,6 +23,7 @@ public class GUIManager : MonoBehaviour {
 
     private void Update()
     {
+       
         if (playerInventoryScript == null)
         {
             playerInventoryScript = GameObject.FindWithTag("player").GetComponent<Inventory>();
@@ -55,7 +56,6 @@ public class GUIManager : MonoBehaviour {
                     }
                 }
             }
-
             RenderSlots();
         }
     }
@@ -112,12 +112,17 @@ public class GUIManager : MonoBehaviour {
     {
         for (int i = 0; i < slots.Length; i++)
         {
+
             Item.ItemStack itemStack = playerInventoryScript.itemStacks[i];
             if (itemStack != null)
             {
                     slots[i].color = new Color(1,1,1,1);
                     slots[i].sprite = itemStack.item.sprite;
-                    slots[i].transform.GetChild(0).GetComponent<Text>().text = itemStack.stackSize.ToString();
+                if (itemStack.stackSize == 1 && itemStack.item.type == Item.Type.Tool)
+                {
+                    slots[i].transform.GetChild(0).GetComponent<Text>().text = "";
+                } else
+                slots[i].transform.GetChild(0).GetComponent<Text>().text =  itemStack.stackSize.ToString();
             }
             else
             {

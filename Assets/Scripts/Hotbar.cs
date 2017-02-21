@@ -41,7 +41,14 @@ public class Hotbar : MonoBehaviour {
     private void UpdateSelector()
     {
         selector.rectTransform.localPosition = slots[selectedSlot - 1].rectTransform.localPosition;
-        playerInv.gameObject.GetComponent<PlayerController>().HoldItem(slots[selectedSlot - 1].sprite);
+        // Debug.Log(playerInv.itemStacks[selectedSlot - 1]);
+
+        //if (playerInv.itemStacks[selectedSlot].item.type == Item.Type.Tool && playerInv.itemStacks[selectedSlot] != null)
+        //{
+        //    playerInv.gameObject.GetComponent<PlayerController>().HoldItem(slots[selectedSlot - 1].sprite, 1f);
+        //}
+        //else
+            playerInv.gameObject.GetComponent<PlayerController>().HoldItem(slots[selectedSlot - 1].sprite,0.8f);
     }
 
     private void UpdateItems()
@@ -54,6 +61,10 @@ public class Hotbar : MonoBehaviour {
             {
                 hotbarSlot.sprite = invSlot.item.sprite;
                 hotbarSlot.color = new Color(1, 1, 1, 1);
+                if (invSlot.stackSize == 1 && invSlot.item.type == Item.Type.Tool)
+                {
+                    slots[i].transform.GetChild(0).GetComponent<Text>().text = "";
+                } else
                 hotbarSlot.transform.FindChild("StackCountText").GetComponent<Text>().text = invSlot.stackSize.ToString();
             }
             else
@@ -63,5 +74,16 @@ public class Hotbar : MonoBehaviour {
                 hotbarSlot.transform.FindChild("StackCountText").GetComponent<Text>().text = "";
             }
         }
+    }
+
+    public Item GetHeldItem()
+    {
+        int selSlot = 10 - selectedSlot;
+        if (playerInv.itemStacks[selSlot + 26] != null)
+        {
+            return playerInv.itemStacks[selSlot + 26].item;
+        }
+
+        return null;
     }
 }

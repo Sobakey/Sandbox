@@ -17,6 +17,9 @@ public class PlayerController : MonoBehaviour {
     private Animator anim;
     private GUIManager guiManager;
     private Transform groundCheck;
+    private Hotbar hotbar;
+    private WorldGenerator worldGen;
+    private BlockManager blockManager;
 	
 	void Start () {
         rb = GetComponent<Rigidbody2D>();
@@ -24,13 +27,17 @@ public class PlayerController : MonoBehaviour {
         // guiManager = GameObject.Find("GUI").GetComponent<GUIManager>();
         guiManager = null;
         groundCheck = transform.FindChild("Ground_Checker");
-	}
+        hotbar = GameObject.Find("Hotbar").GetComponent<Hotbar>();
+        worldGen = GameObject.Find("World").GetComponent<WorldGenerator>();
+        blockManager = GameObject.Find("GameManager").GetComponent<BlockManager>();
+    }
 	
 	
 	void Update () {
         UpdateControls();
         UpdateMovement();
         UpdateBreaking();
+        UpdatePlacing();
     }
 
     private bool IsGrounded()
@@ -80,9 +87,10 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
-    public void HoldItem(Sprite sprite)
+    public void HoldItem(Sprite sprite, float size)
     {
-            handSlot.sprite = sprite;                          
+            handSlot.sprite = sprite;
+            handSlot.transform.localScale = new Vector3(size, size, handSlot.transform.localScale.z);                     
     }
 
     private void UpdateMovement()
@@ -111,6 +119,44 @@ public class PlayerController : MonoBehaviour {
                 if (hit.collider.gameObject.tag == "Block" || hit.collider.gameObject.tag == "tall_grass")
                 {
                     GameObject.Find("World").GetComponent<WorldGenerator>().DestroyBlock(hit.collider.gameObject, hit_down.collider.gameObject);
+                }
+            }
+        }
+    }
+
+    private void UpdatePlacing()
+    {
+        if (Input.GetMouseButtonDown(1))
+        {
+            Vector3 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            RaycastHit2D hit_left = Physics2D.Raycast(new Vector2(pos.x - 1, pos.y), transform.position - pos, 0.1f);
+            RaycastHit2D hit_rigth = Physics2D.Raycast(new Vector2(pos.x + 1, pos.y), transform.position - pos, 0.1f);
+            RaycastHit2D hit_up = Physics2D.Raycast(new Vector2(pos.x, pos.y + 1), transform.position - pos, 0.1f);
+            RaycastHit2D hit = Physics2D.Raycast(new Vector3(pos.x,pos.y,0), transform.position - pos, 0.1f);
+            RaycastHit2D hit_down = Physics2D.Raycast(new Vector2(pos.x, pos.y - 1), transform.position - pos, 0.1f);
+
+            if (hit.collider == null && ((hit_up.collider != null || hit_left.collider != null || hit_rigth.collider != null || hit_down.collider != null) || hit_down.collider.gameObject.tag != "tall_grass" || (hit_up.collider.gameObject.tag != "player" || hit_left.collider.gameObject.tag != "player" || hit_rigth.collider.gameObject.tag != "player" || hit_down.collider.gameObject.tag != "player" || hit.collider.gameObject.tag != "player")))
+            {
+                int i = 1;
+                while (hit_down.collider == null || hit_down.collider.gameObject.tag == "tall_grass")
+                {
+                    hit_down = Physics2D.Raycast(new Vector2(pos.x, pos.y - i), transform.position - pos, 0.1f);                  
+                    i++;
+                }
+              
+
+                Item item = hotbar.GetHeldItem();
+
+                if (item == null)
+                {
+                    return;
+                }
+
+                if (item.type == Item.Type.Block)
+                {
+                    Debug.Log(item.name);
+                    Block block = blockManager.FindBlock("dirt");//item.name);
+                    worldGen.PlaceBlock(block, pos, hit_down.collider.gameObject);
                 }
             }
         }
