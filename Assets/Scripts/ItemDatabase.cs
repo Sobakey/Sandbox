@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ItemManager : MonoBehaviour {
+public class ItemDatabase : MonoBehaviour {
 
     public List<Item> items;
-
 
     public Item FindItem(string name)
     {

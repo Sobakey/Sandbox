@@ -8,6 +8,11 @@ public class Item  {
     public string name;
     public Sprite sprite;
     public int maxStack = 64;
+    public enum Type
+    {
+        Item, Block, Weapon, Tool
+    }
+    public Type type;
 
     public class ItemStack
     {

@@ -70,6 +70,50 @@ public class WorldGenerator : MonoBehaviour {
         }
     }
 
+    public void UpdateChunk(Chunk chunk)
+    {
+      //  GameObject parentBlocks = new GameObject();
+
+        for (int x = 0; x < Chunk.size; x++)
+        {
+            for (int y = 0; y < chunkHeight; y++)
+            {
+                if (chunk.blocks[x,y] != null && chunk.blockObjects[x,y] == null)
+                {
+                    GameObject block_GameObject = new GameObject();
+                   // block_GameObject.transform.SetParent(parentBlocks.transform);
+                   // parentBlocks.name = "chunk " + ChunkPosToWorldPos(x, y, chunk.position);
+                    SpriteRenderer sr = block_GameObject.AddComponent<SpriteRenderer>();
+                    sr.sprite = chunk.blocks[x, y].sprite;
+                    block_GameObject.name = chunk.blocks[x, y].display_name;
+                    block_GameObject.tag = "Block";
+                    block_GameObject.transform.position = new Vector3((chunk.position * Chunk.size) + x, y);
+                    sr.material = mat;
+
+
+                    //if (chunk.blocks[x, y - 1] != null && chunk.blocks[x, y - 1].isSolid)
+                    //{
+                    //    sr.material = matDark;
+                    //}
+
+                    BoxCollider2D bc = block_GameObject.AddComponent<BoxCollider2D>();
+                    chunk.blockObjects[x, y] = block_GameObject;
+
+                    if (chunk.blocks[x, y].isSolid != true)
+                    {
+                        bc.isTrigger = true;
+                        block_GameObject.tag = "tall_grass";
+                    }
+                }
+                else if (chunk.blocks[x, y] == null && chunk.blockObjects[x, y] != null)
+                {
+                    GameObject.Destroy(chunk.blockObjects[x,y]);
+                }
+
+            }
+        }
+    }
+
     private Chunk ChunkAtPos(float x)
     {
         int chunkIndex = Mathf.FloorToInt(x / Chunk.size);
@@ -101,8 +145,9 @@ public class WorldGenerator : MonoBehaviour {
         return new Vector2(xPos, yPos);
     }
 
-    private void srdr(GameObject block)
+    private void ToMoveBack(GameObject block)
     {
+        block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, block.transform.position.z + 1);
         BoxCollider2D bc = block.GetComponent<BoxCollider2D>();
         bc.enabled = false;
         SpriteRenderer srBG = block.GetComponent<SpriteRenderer>();
@@ -110,26 +155,12 @@ public class WorldGenerator : MonoBehaviour {
     }
 
     public void DestroyBlock(GameObject block, GameObject block_down)
-    {
-       
-
-        //if (block.gameObject.tag != "tall_grass")
-        //{
-            //BoxCollider2D bc = block.GetComponent<BoxCollider2D>();
-            //bc.enabled = false;
-            //SpriteRenderer srBG = block.GetComponent<SpriteRenderer>();
-            //srBG.material = matBG;
-            //Debug.Log("srBG   "+srBG.material.name);
-        //}
-           
+    {      
         Vector3 blockPos = block.transform.position;
         Vector2 chunkPos = WorldPosToChunkPos(blockPos.x, blockPos.y);
 
         SpriteRenderer sr = block_down.GetComponent<SpriteRenderer>();
         sr.material = mat;
-       // Debug.Log("sr   " + sr.material.name);
-
-
 
         int x = (int)chunkPos.x;
         int y = (int)chunkPos.y;
@@ -164,8 +195,7 @@ public class WorldGenerator : MonoBehaviour {
                     {
                         
                         GameObject.Destroy(grass); //with tall_grass
-                        block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, block.transform.position.z+1);
-                        srdr(block);
+                        ToMoveBack(block);
                         chunk.blocks[x, y+1] = blockManager.FindBlock(0);
                         //GameObject.Destroy(block);
                     }
@@ -175,8 +205,7 @@ public class WorldGenerator : MonoBehaviour {
             }
             else
             {              
-                block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, block.transform.position.z + 1);
-                srdr(block);
+                ToMoveBack(block);
                 chunk.blocks[x, y] = blockManager.FindBlock(0); //without tall_grass
                 //GameObject.Destroy(block);
             }
@@ -184,14 +213,26 @@ public class WorldGenerator : MonoBehaviour {
         }
         else
         {
-            block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, block.transform.position.z + 1);
-            srdr(block);
+            ToMoveBack(block);
             chunk.blocks[x, y] = blockManager.FindBlock(0);
             if (block.gameObject.tag == "tall_grass")
             { 
                  GameObject.Destroy(block);
             }  
         }
+    }
+
+    public void PlaceBlock(Block block, Vector3 pos, GameObject go)
+    {
+        Chunk chunk = ChunkAtPos(pos.x);
+        Vector2 chunkPos = WorldPosToChunkPos(pos.x, pos.y);
+
+        SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
+        sr.material = matDark;
+
+
+        chunk.blocks[(int)chunkPos.x, (int)chunkPos.y] = block;
+        UpdateChunk(chunk);
     }
 
     void Update () {
