@@ -24,7 +24,6 @@ sandbox/.vs/
 *.log
 */[Ll]ibrary/*
 .vscode/
-*.meta
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
