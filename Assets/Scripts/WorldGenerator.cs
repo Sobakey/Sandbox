@@ -44,13 +44,15 @@ public class WorldGenerator : MonoBehaviour {
                     block_GameObject.transform.SetParent(parentBlocks.transform);
                     parentBlocks.name = "chunk " + ChunkPosToWorldPos(x,y,chunk.position);
                     SpriteRenderer sr = block_GameObject.AddComponent<SpriteRenderer>();
-                    sr.sprite = chunk.blocks[x, y].sprite;
+                    sr.sprite = chunk.blocks[x, y].GetSprite();
                     block_GameObject.name = chunk.blocks[x, y].display_name;
                     block_GameObject.tag = "Block";
                     block_GameObject.transform.position = new Vector3((chunk.position*Chunk.size)+x, y);
 					sr.material = mat;
-                    var loGen = block_GameObject.AddComponent<Light2D.LightObstacleGenerator>();
-                    loGen.Material = mat;
+                    if(Light2D.LightingSystem.Instance.isActiveAndEnabled){
+                        var loGen = block_GameObject.AddComponent<Light2D.LightObstacleGenerator>();
+                        loGen.Material = mat;
+                    }
 					// if (chunk.blocks[x, y+1] != null && chunk.blocks[x,y+1].isSolid) {
 					// 	sr.material = matDark;
 					// }
@@ -84,7 +86,7 @@ public class WorldGenerator : MonoBehaviour {
                    // block_GameObject.transform.SetParent(parentBlocks.transform);
                    // parentBlocks.name = "chunk " + ChunkPosToWorldPos(x, y, chunk.position);
                     SpriteRenderer sr = block_GameObject.AddComponent<SpriteRenderer>();
-                    sr.sprite = chunk.blocks[x, y].sprite;
+                    sr.sprite = chunk.blocks[x, y].GetSprite();
                     block_GameObject.name = chunk.blocks[x, y].display_name;
                     block_GameObject.tag = "Block";
                     block_GameObject.transform.position = new Vector3((chunk.position * Chunk.size) + x, y);

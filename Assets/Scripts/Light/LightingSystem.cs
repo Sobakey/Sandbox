@@ -11,7 +11,7 @@ namespace Light2D
     /// Main script for lights. Should be attached to camera.
     /// Handles lighting operation like camera setup, shader setup, merging cameras output together, blurring and some others.
     /// </summary>
-    [ExecuteInEditMode]
+    //[ExecuteInEditMode]
     [RequireComponent(typeof (Camera))]
     public class LightingSystem : MonoBehaviour
     {
@@ -358,7 +358,7 @@ namespace Light2D
             //RenderNormalBuffer();
             RenderLightSources();
             //RenderLightSourcesBlur();
-            //RenderAmbientLight();
+            RenderAmbientLight();
             RenderLightOverlay(src, dest);
         }
 
@@ -656,7 +656,7 @@ namespace Light2D
                 var oldBackgroundColor = LightCamera.backgroundColor;
                 LightCamera.targetTexture = _ambientEmissionTexture;
                 LightCamera.cullingMask = 1 << AmbientLightLayer;
-                LightCamera.backgroundColor = new Color(0, 0, 0, 0);
+                //LightCamera.backgroundColor = new Color(0, 0, 0, 0);
                 LightCamera.Render();
                 LightCamera.targetTexture = null;
                 LightCamera.cullingMask = 0;

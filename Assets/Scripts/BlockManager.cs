@@ -3,28 +3,33 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class BlockManager : MonoBehaviour {
-    public List<Block> blocks;
+    public Block[] blocks;
+    private Dictionary<int, Block> blocksCache = new Dictionary<int, Block>();
+    private Dictionary<string, byte> blocksNameCache = new Dictionary<string, byte>();
+
+    void Start(){
+        foreach (var item in blocks)
+        {
+            blocksCache.Add(item.id, item);
+            blocksNameCache.Add(item.display_name, item.id);
+        }
+    }
 
     public Block FindBlock (byte id)
     {
-        foreach (Block block in blocks)
-        {
-            if (block.id == id)
-            {
-                return block;
-            }
+        Block res;
+        if(blocksCache.TryGetValue(id, out res)){
+            return res;
         }
         return null;
     }
 
+
     public Block FindBlock(string name)
     {
-        foreach (Block block in blocks)
-        {
-            if (block.display_name == name)
-            {
-                return block;
-            }
+        byte id;
+        if(blocksNameCache.TryGetValue(name, out id)){
+            return FindBlock(id);
         }
         return null;
     }

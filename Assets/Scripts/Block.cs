@@ -6,7 +6,11 @@ using UnityEngine;
 public class Block {
     public string display_name;
     public byte id;
-    public Sprite sprite;
+    public Sprite[] sprites;
     public bool isSolid = true;
     public Drop[] drops;
+
+    public Sprite GetSprite(){
+        return sprites[Random.Range(0, sprites.Length - 1)];
+    }
 }
