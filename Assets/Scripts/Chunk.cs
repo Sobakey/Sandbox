@@ -15,6 +15,11 @@ public class Chunk  {
     private static float heightModifier = 20f;
     private BlockManager blockManager;
 
+    //TODO: Код реализован только для горизонтальной оси
+    public static int GetChunkIndexAtPos(Vector3 pos){
+        return Mathf.FloorToInt(pos.x / Chunk.size);
+    }
+
     public Chunk(BlockManager blockManager, int position)
     {
         this.blockManager = blockManager;

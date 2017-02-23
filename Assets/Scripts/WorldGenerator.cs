@@ -4,26 +4,26 @@ using UnityEngine;
 
 public class WorldGenerator : MonoBehaviour {
 
+    public LayerMask ObstacleLayer;
     public GameObject player;
     public static int chunkHeight = 64;
+    //Количиство чанков которые должны присутствовать на сцене одновременно
     public int viewDistance = 3;
 	public Material mat;
 	public Material matDark;
     public Material matBG;
 
     private BlockManager blockManager;
-    private List<Chunk> chunks;
+    private Dictionary<int, Chunk> chunks;
     private ItemDatabase itemDatabase;
 
 	void Start () {
         blockManager = GameObject.Find("GameManager").GetComponent<BlockManager>();
         itemDatabase = GameObject.Find("GameManager").GetComponent<ItemDatabase>();
-        chunks = new List<Chunk>();
+        chunks = new Dictionary<int, Chunk>();
         player = SpawnPlayer(Chunk.size/2, chunkHeight/2 + 2);
 	}
 	
-   
-
     private GameObject SpawnPlayer(float x , float y)
     {
        GameObject player_object =  GameObject.Instantiate(player,new Vector3(x,y),Quaternion.identity) as GameObject;
@@ -49,14 +49,7 @@ public class WorldGenerator : MonoBehaviour {
                     block_GameObject.tag = "Block";
                     block_GameObject.transform.position = new Vector3((chunk.position*Chunk.size)+x, y);
 					sr.material = mat;
-                    if(Light2D.LightingSystem.Instance.isActiveAndEnabled){
-                        var loGen = block_GameObject.AddComponent<Light2D.LightObstacleGenerator>();
-                        loGen.Material = mat;
-                    }
-					// if (chunk.blocks[x, y+1] != null && chunk.blocks[x,y+1].isSolid) {
-					// 	sr.material = matDark;
-					// }
-
+                    block_GameObject.layer = 13;//TODO: Хардкод для слоя препядствий
                     BoxCollider2D bc = block_GameObject.AddComponent<BoxCollider2D>();
                     chunk.blockObjects[x, y] = block_GameObject;
 
@@ -120,12 +113,9 @@ public class WorldGenerator : MonoBehaviour {
     {
         int chunkIndex = Mathf.FloorToInt(x / Chunk.size);
 
-        foreach (Chunk chunk in chunks)
-        {
-            if (chunk.position == chunkIndex)
-            {
-                return chunk;
-            }
+        Chunk chunk;
+        if(chunks.TryGetValue(chunkIndex, out chunk)){
+            return chunk;
         }
          
         return null;
@@ -154,7 +144,7 @@ public class WorldGenerator : MonoBehaviour {
         bc.enabled = false;
         SpriteRenderer srBG = block.GetComponent<SpriteRenderer>();
         srBG.material = matBG;
-        Destroy(block.transform.GetChild(0).gameObject);
+        block.layer = 0;
     }
 
     public void DestroyBlock(GameObject block, GameObject block_down)
@@ -238,37 +228,28 @@ public class WorldGenerator : MonoBehaviour {
         UpdateChunk(chunk);
     }
 
-    void Update () {
-        int playerChunk = Mathf.FloorToInt(player.transform.position.x/Chunk.size);
+    //Метод потребляет огромное количество времени, а смысл его не ясен
+    void Update () 
+    {
+        int playerChunk = Chunk.GetChunkIndexAtPos(player.transform.position);
 
         for (int i = playerChunk - viewDistance; i < playerChunk + viewDistance; i++)
         {
-            bool spawn = true;
-
-            foreach (Chunk chunk in chunks)
-            {
-                if (chunk.position == i)
-                {
-
-                    spawn = false;
-                }
-            }
-
-            if (spawn)
+            if(!chunks.ContainsKey(i))
             {
                 Chunk newChunk = new Chunk(blockManager, i);
                 newChunk.GenerateBlocks();
                 SpawnBlocks(newChunk);
-                chunks.Add(newChunk);
+                chunks.Add(newChunk.position, newChunk);
             }
         }
-
-        foreach (Chunk chunk in chunks)
+  
+        foreach (Chunk chunk in chunks.Values)
         {
             if (chunk.position < playerChunk - viewDistance || chunk.position > playerChunk + viewDistance)
             {
                 chunk.Destroy();
-                chunks.Remove(chunk);
+                chunks.Remove(chunk.position);
                 break;
             }
         }

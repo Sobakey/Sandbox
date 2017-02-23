@@ -15,6 +15,7 @@ namespace Light2D
     [RequireComponent(typeof (Camera))]
     public class LightingSystem : MonoBehaviour
     {
+        public const string LIGHT_CAMERA_NAME = "LightCamera";
         /// <summary>
         /// Size of lighting pixel in Unity meters. Controls resoultion of lighting textures. 
         /// Smaller value - better quality, but lower performance.
@@ -117,6 +118,7 @@ namespace Light2D
         private Material _normalMappedLightMaterial;
         private Material _lightCombiningMaterial;
         //private Material _alphaBlendedMaterial;
+        private Material _obstacleMapMaterial;
         private bool _halfTexelOffest;
 #if LIGHT2D_2DTK
         private tk2dCamera _tk2dCamera;
@@ -147,15 +149,10 @@ namespace Light2D
         {
             if (LightCamera == null)
             {
-                var lCameraObj = GameObject.Find("LightCamera") ?? new GameObject("LightCamera");
+                var lCameraObj = GameObject.Find(LIGHT_CAMERA_NAME) ?? new GameObject(LIGHT_CAMERA_NAME, typeof(Camera));
                 lCameraObj.transform.parent = _camera.transform;
                 var cameraComponent = lCameraObj.GetComponent<Camera>();
-                if(!cameraComponent){
-                    LightCamera = lCameraObj.AddComponent<Camera>();
-                }
-                else{
-                    LightCamera = cameraComponent;
-                }
+                LightCamera = cameraComponent;
                 LightCamera.backgroundColor = new Color(0,0,0,1);
                 LightCamera.orthographic = true;
             }
@@ -166,6 +163,7 @@ namespace Light2D
             _instance = this;
             _camera = GetComponent<Camera>();
             CreateLightCamera();
+            _obstacleMapMaterial = (Material)UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/Materials/Light/ObstacleMap.mat", typeof(Material));
         }
 
         private void Start()
@@ -358,8 +356,9 @@ namespace Light2D
             //RenderNormalBuffer();
             RenderLightSources();
             //RenderLightSourcesBlur();
-            RenderAmbientLight();
-            RenderLightOverlay(src, dest);
+            //RenderAmbientLight();
+            Graphics.Blit(src, dest);
+            //RenderLightOverlay(src, dest);
         }
 
         // void OnPreCull()
@@ -449,7 +448,7 @@ namespace Light2D
             LightCamera.backgroundColor = oldColor;
 
             _obstaclesTexture.DiscardContents();
-            Graphics.Blit(_obstaclesUpsampledTexture, _obstaclesTexture);
+            Graphics.Blit(_obstaclesUpsampledTexture, _obstaclesTexture, _obstacleMapMaterial);
         }
 
         private void SetupShaders()
