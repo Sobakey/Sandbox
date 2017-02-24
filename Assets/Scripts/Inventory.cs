@@ -15,7 +15,8 @@ public class Inventory : MonoBehaviour
         itemDatabase = GameObject.Find("GameManager").GetComponent<ItemDatabase>();
         itemStacks = new Item.ItemStack[slotCount];
         itemStacks[35] = new Item.ItemStack(itemDatabase.FindItem("Axe"), 1);
-        //itemStacks[1] = new Item.ItemStack(itemDatabase.FindItem("Stone Block"), 64);
+        itemStacks[34] = new Item.ItemStack(itemDatabase.FindItem("Dirt Block"), 1);
+        itemStacks[33] = new Item.ItemStack(itemDatabase.FindItem("Stone Block"), 1);
     }
 
     public void AddItem(string name, int count)

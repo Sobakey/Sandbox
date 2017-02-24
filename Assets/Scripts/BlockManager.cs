@@ -5,7 +5,7 @@ using UnityEngine;
 public class BlockManager : MonoBehaviour {
     public Block[] blocks;
     private Dictionary<int, Block> blocksCache = new Dictionary<int, Block>();
-    private Dictionary<string, byte> blocksNameCache = new Dictionary<string, byte>();
+    private Dictionary<string, int> blocksNameCache = new Dictionary<string, int>();
 
     void Start(){
         foreach (var item in blocks)
@@ -15,7 +15,7 @@ public class BlockManager : MonoBehaviour {
         }
     }
 
-    public Block FindBlock (byte id)
+    public Block FindBlock (int id)
     {
         Block res;
         if(blocksCache.TryGetValue(id, out res)){
@@ -27,7 +27,7 @@ public class BlockManager : MonoBehaviour {
 
     public Block FindBlock(string name)
     {
-        byte id;
+        int id;
         if(blocksNameCache.TryGetValue(name, out id)){
             return FindBlock(id);
         }

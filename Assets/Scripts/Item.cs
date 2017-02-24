@@ -6,6 +6,7 @@ using UnityEngine;
 public class Item  {
 
     public string name;
+    public int block_id;
     public Sprite sprite;
     public int maxStack = 64;
     public enum Type

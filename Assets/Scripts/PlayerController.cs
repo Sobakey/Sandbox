@@ -24,8 +24,7 @@ public class PlayerController : MonoBehaviour {
 	void Start () {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-         guiManager = GameObject.Find("GUI").GetComponent<GUIManager>();
-        guiManager = null;
+        guiManager = GameObject.Find("GUI").GetComponent<GUIManager>();
         groundCheck = transform.FindChild("Ground_Checker");
         hotbar = GameObject.Find("Hotbar").GetComponent<Hotbar>();
         worldGen = GameObject.Find("World").GetComponent<WorldGenerator>();
@@ -135,7 +134,11 @@ public class PlayerController : MonoBehaviour {
             RaycastHit2D hit = Physics2D.Raycast(new Vector3(pos.x,pos.y,0), transform.position - pos, 0.1f);
             RaycastHit2D hit_down = Physics2D.Raycast(new Vector2(pos.x, pos.y - 1), transform.position - pos, 0.1f);
 
-            if (hit.collider == null && ((hit_up.collider != null || hit_left.collider != null || hit_rigth.collider != null || hit_down.collider != null) || hit_down.collider.gameObject.tag != "tall_grass" || (hit_up.collider.gameObject.tag != "player" || hit_left.collider.gameObject.tag != "player" || hit_rigth.collider.gameObject.tag != "player" || hit_down.collider.gameObject.tag != "player" || hit.collider.gameObject.tag != "player")))
+            if ((hit.collider == null || hit.collider.gameObject.layer == 8)
+                && (hit_up.collider != null && hit_up.collider.gameObject.tag != "player" ||  hit_left.collider != null && hit_left.collider.gameObject.tag != "player" 
+                || hit_rigth.collider != null && hit_rigth.collider.gameObject.tag != "player" 
+                || hit_down.collider != null && (hit_down.collider.gameObject.tag != "player" 
+                && hit_down.collider.gameObject.tag != "tall_grass")))
             {
                 int i = 1;
                 while (hit_down.collider == null || hit_down.collider.gameObject.tag == "tall_grass")
@@ -152,11 +155,11 @@ public class PlayerController : MonoBehaviour {
                     return;
                 }
 
-                if (item.type == Item.Type.Block)
+                if (item.type == Item.Type.Block )
                 {
-                    Debug.Log(item.name);
-                    Block block = blockManager.FindBlock("dirt");//item.name);
-                    worldGen.PlaceBlock(block, pos, hit_down.collider.gameObject);
+                    //Debug.Log(item.name);
+                    Block block = blockManager.FindBlock(item.block_id);
+                    worldGen.PlaceBlock(block, pos/*, hit_down.collider.gameObject*/);
                 }
             }
         }

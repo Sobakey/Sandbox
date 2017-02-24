@@ -163,7 +163,7 @@ namespace Light2D
             _instance = this;
             _camera = GetComponent<Camera>();
             CreateLightCamera();
-            _obstacleMapMaterial = (Material)UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/Materials/Light/ObstacleMap.mat", typeof(Material));
+           //_obstacleMapMaterial = (Material)UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/Materials/Light/ObstacleMap.mat", typeof(Material));
         }
 
         private void Start()
