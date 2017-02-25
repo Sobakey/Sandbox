@@ -278,7 +278,7 @@ public class WorldGenerator : MonoBehaviour
         {
             var xDiff = Mathf.Abs(Mathf.Abs(chunk.coords.x) - Mathf.Abs(playerChunk.x));
             var yDiff = Mathf.Abs(Mathf.Abs(chunk.coords.y) - Mathf.Abs(playerChunk.y)); 
-            if (xDiff < viewDistance || yDiff < viewDistance)
+            if (xDiff > viewDistance || yDiff > viewDistance)
             {
                 chunk.Destroy();
                 chunks.Remove(chunk.coords);
