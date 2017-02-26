@@ -1,11 +1,13 @@
-﻿using Sandbox;
+﻿//#define SPAWN_ONLY_SURFACE
+
+using Sandbox;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+[ExecuteInEditMode]
 public class WorldGenerator : MonoBehaviour
 {
-
     public LayerMask ObstacleLayer;
     public GameObject player;
     public static int chunkHeight = 64;
@@ -17,34 +19,59 @@ public class WorldGenerator : MonoBehaviour
     public int seed;
     public bool isRandomSeed = true;
     public float pMod = 0.05f;
-    public float pHeightMod = 100f;
+    public int worldHeight = 255;
     public float heightMod = 20f;
-
+    public float scale = 1.0f;
+    public int octaves = 1;
+    public float persistance = 1.0f;
+    public float lacunarity = 1.0f;
     private BlockManager blockManager;
-    private Dictionary<Vector2Int, Chunk> chunks;
+    private Dictionary<Vector2Int, Chunk> visibleChunks;
     private ItemDatabase itemDatabase;
-
-
-       
+    private PerlinNoizeGenerator perlinNoizeGenerator;
 
     void Start()
     {
+        blockManager = GameObject.Find("GameManager").GetComponent<BlockManager>();
+        itemDatabase = GameObject.Find("GameManager").GetComponent<ItemDatabase>();
+        Rebuild();
+        if (Application.isPlaying)
+        {
+            var playerX = Chunk.size / 2;
+            var playerPos = ChunkPosToWorldPos(playerX, perlinNoizeGenerator.GetHeight(playerX) + 1);
+            player = SpawnPlayer(playerPos);
+        }
+    }
+
+    public void Rebuild()
+    {
+        if (visibleChunks != null)
+        {
+            foreach (var key in visibleChunks.Keys.ToArray())
+            {
+                visibleChunks[key].Destroy();
+            }
+        }
         if (isRandomSeed)
         {
             seed = Random.Range(-5000, 5000);
         }
-        blockManager = GameObject.Find("GameManager").GetComponent<BlockManager>();
-        itemDatabase = GameObject.Find("GameManager").GetComponent<ItemDatabase>();
-        chunks = new Dictionary<Vector2Int, Chunk>();
-        var playerPos = ChunkPosToWorldPos(Chunk.size / 2, Chunk.size + 2, new Vector2Int(0,0));
-        player = SpawnPlayer(playerPos.x, playerPos.y);
+        visibleChunks = new Dictionary<Vector2Int, Chunk>();
+
+        perlinNoizeGenerator = new PerlinNoizeGenerator(new Vector2Int(seed, seed), worldHeight, scale, octaves, persistance, lacunarity);
+        if (Application.isPlaying)
+        {
+            var playerX = Chunk.size / 2;
+            player.transform.position = ChunkPosToWorldPos(playerX, perlinNoizeGenerator.GetHeight(playerX) + 1);
+        }
     }
 
-    private GameObject SpawnPlayer(float x, float y)
+    private GameObject SpawnPlayer(Vector2 pos)
     {
-        GameObject player_object = GameObject.Instantiate(player, new Vector3(x, y), Quaternion.identity) as GameObject;
+        GameObject player_object = GameObject.Instantiate(player, pos, Quaternion.identity) as GameObject;
         return player_object;
     }
+
 
     private void SpawnBlocks(Chunk chunk)
     {
@@ -74,17 +101,13 @@ public class WorldGenerator : MonoBehaviour
                         bc.isTrigger = true;
                         block_GameObject.tag = "tall_grass";
                     }
-
                 }
-
             }
         }
     }
 
-    public void UpdateChunk(Chunk chunk)
+    public void RecalculateChunk(Chunk chunk)
     {
-        //  GameObject parentBlocks = new GameObject();
-
         for (int x = 0; x < Chunk.size; x++)
         {
             for (int y = 0; y < Chunk.size; y++)
@@ -92,20 +115,12 @@ public class WorldGenerator : MonoBehaviour
                 if (chunk.blocks[x, y] != null && chunk.blockObjects[x, y] == null)
                 {
                     GameObject block_GameObject = new GameObject();
-                    // block_GameObject.transform.SetParent(parentBlocks.transform);
-                    // parentBlocks.name = "chunk " + ChunkPosToWorldPos(x, y, chunk.position);
                     SpriteRenderer sr = block_GameObject.AddComponent<SpriteRenderer>();
                     sr.sprite = chunk.blocks[x, y].GetSprite();
                     block_GameObject.name = chunk.blocks[x, y].display_name;
                     block_GameObject.tag = "Block";
                     block_GameObject.transform.position = new Vector3((chunk.coords.x * Chunk.size) + x, y);
                     sr.material = mat;
-
-
-                    //if (chunk.blocks[x, y - 1] != null && chunk.blocks[x, y - 1].isSolid)
-                    //{
-                    //    sr.material = matDark;
-                    //}
 
                     BoxCollider2D bc = block_GameObject.AddComponent<BoxCollider2D>();
                     chunk.blockObjects[x, y] = block_GameObject;
@@ -128,7 +143,7 @@ public class WorldGenerator : MonoBehaviour
     private Chunk ChunkAtPos(Vector2Int pos)
     {
         Chunk chunk;
-        if (chunks.TryGetValue(pos, out chunk))
+        if (visibleChunks.TryGetValue(pos, out chunk))
         {
             return chunk;
         }
@@ -136,17 +151,9 @@ public class WorldGenerator : MonoBehaviour
         return null;
     }
 
-    //public Vector2 WorldPosToChunkPos(float x, float y)
-    //{
-    //    int xPos = Mathf.RoundToInt(x - (ChunkAtPos(x).coords.x * Chunk.size));
-    //    int yPos = Mathf.RoundToInt(y);
-
-    //    return new Vector2(xPos, yPos);
-    //}
-
-    public Vector2 ChunkPosToWorldPos(int x, int y, Vector2Int chunkPos)
+    public Vector2 ChunkPosToWorldPos(int x, int y)
     {
-        int xPos = Mathf.FloorToInt(x + (chunkPos.x * Chunk.size));
+        int xPos = Mathf.FloorToInt(x);
         int yPos = Mathf.FloorToInt(y);
 
         return new Vector2(xPos, yPos);
@@ -157,7 +164,7 @@ public class WorldGenerator : MonoBehaviour
         block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, block.transform.position.z + 1);
         BoxCollider2D bc = block.GetComponent<BoxCollider2D>();
         bc.isTrigger = true;
-       // bc.enabled = false;
+        // bc.enabled = false;
         SpriteRenderer srBG = block.GetComponent<SpriteRenderer>();
         srBG.material = matBG;
         block.layer = 8;
@@ -240,49 +247,66 @@ public class WorldGenerator : MonoBehaviour
 
         //SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
         chunk.blocks[(int)chunkPos.x, (int)chunkPos.y] = block;
-        UpdateChunk(chunk);
+        RecalculateChunk(chunk);
     }
 
-    //Метод потребляет огромное количество времени, а смысл его не ясен
     void Update()
     {
-        Vector2Int playerChunk = Chunk.GetChunkCoordAtPos(player.transform.position);
-
-        for (int x = playerChunk.x - viewDistance; x <= playerChunk.x + viewDistance; x++)
+        if (Application.isPlaying)
         {
-            for (int y = playerChunk.y - viewDistance; y <= playerChunk.y + viewDistance; y++)
+            var playerPos = Chunk.GetChunkCoordAtPos(player.transform.position);
+            UpdateChunks(playerPos);
+
+            foreach (Chunk chunk in visibleChunks.Values.ToArray())
             {
-                var pos = new Vector2Int(x, y);
-                if (!chunks.ContainsKey(pos))
+                var xDiff = Mathf.Abs(Mathf.Abs(chunk.coords.x) - Mathf.Abs(playerPos.x));
+                var yDiff = Mathf.Abs(Mathf.Abs(chunk.coords.y) - Mathf.Abs(playerPos.y));
+                if (xDiff > viewDistance || yDiff > viewDistance)
                 {
-                    Chunk newChunk = new Chunk(blockManager, pos);
-                    newChunk.GenerateBlocks(seed, pMod, pHeightMod, heightMod);
-                    SpawnBlocks(newChunk);
-                    chunks.Add(pos, newChunk);
+                    chunk.Destroy();
+                    visibleChunks.Remove(chunk.coords);
                 }
             }
         }
+    }
 
-        //for (int i = playerChunk - viewDistance; i < playerChunk + viewDistance; i++)
-        //{
-        //    if (!chunks.ContainsKey(i))
-        //    {
-        //        Chunk newChunk = new Chunk(blockManager, i);
-        //        newChunk.GenerateBlocks(seed,pMod,pHeightMod,heightMod);
-        //        SpawnBlocks(newChunk);
-        //        chunks.Add(newChunk.Id, newChunk);
-        //    }
-        //}
-
-        foreach (Chunk chunk in chunks.Values)
+    void UpdateChunks(Vector2Int playerPos)
+    {
+        for (int x = playerPos.x - viewDistance; x <= playerPos.x + viewDistance; x++)
         {
-            var xDiff = Mathf.Abs(Mathf.Abs(chunk.coords.x) - Mathf.Abs(playerChunk.x));
-            var yDiff = Mathf.Abs(Mathf.Abs(chunk.coords.y) - Mathf.Abs(playerChunk.y)); 
-            if (xDiff > viewDistance || yDiff > viewDistance)
+            for (int y = playerPos.y - viewDistance; y <= playerPos.y + viewDistance; y++)
             {
-                chunk.Destroy();
-                chunks.Remove(chunk.coords);
-                break;
+                var pos = new Vector2Int(x, y);
+                if (!visibleChunks.ContainsKey(pos))
+                {
+                    Chunk newChunk = new Chunk(blockManager, pos);
+                    newChunk.GenerateBlocks(perlinNoizeGenerator);
+                    if (!newChunk.IsEmpty)
+                    {
+                        SpawnBlocks(newChunk);
+                        visibleChunks.Add(pos, newChunk);
+                    }
+                }
+            }
+        }
+    }
+    /// <summary>
+    /// Callback to draw gizmos that are pickable and always drawn.
+    /// </summary>
+    void OnDrawGizmos()
+    {
+        if (perlinNoizeGenerator != null)
+        {
+            var startFrom = -1000;
+            var ends = 1000;
+            var prevPos = new Vector2(startFrom, perlinNoizeGenerator.GetHeight(0));
+            var nextPos = new Vector2(0, 0);
+            for (int x = startFrom; x < 1000; x++)
+            {
+                nextPos.x = x;
+                nextPos.y = perlinNoizeGenerator.GetHeight(x);
+                Gizmos.DrawLine(prevPos, nextPos);
+                prevPos = nextPos;
             }
         }
     }
