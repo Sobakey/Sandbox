@@ -5,11 +5,11 @@ using UnityEngine;
 public class PickupDrops : MonoBehaviour {
 
     private Inventory connectedInventory;
-    private ItemDatabase itemDatabase;
+    //private ItemDatabase itemDatabase;
 
 	private void Start () {
         connectedInventory = transform.parent.GetComponent<Inventory>();
-        itemDatabase = GameObject.Find("GameManager").GetComponent<ItemDatabase>();
+        //itemDatabase = GameObject.Find("GameManager").GetComponent<ItemDatabase>();
 	}
 
     private void OnTriggerEnter2D(Collider2D other)

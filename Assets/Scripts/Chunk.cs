@@ -8,8 +8,6 @@ public class Chunk  {
     public static int size = 32;
     public Block[,] blocks;
     public GameObject[,] blockObjects;
-
-    private static float heightModifier = 20f;
     private BlockManager blockManager;
 
     public Vector2Int coords;

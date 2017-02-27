@@ -18,9 +18,7 @@ public class WorldGenerator : MonoBehaviour
     public Material matBG;
     public int seed;
     public bool isRandomSeed = true;
-    public float pMod = 0.05f;
     public int worldHeight = 255;
-    public float heightMod = 20f;
     public float scale = 1.0f;
     public int octaves = 1;
     public float persistance = 1.0f;
@@ -175,7 +173,7 @@ public class WorldGenerator : MonoBehaviour
         Vector3 blockPos = block.transform.position;
         Vector2Int chunkPos = Chunk.GetChunkCoordAtPos(blockPos);
 
-        SpriteRenderer sr = block_down.GetComponent<SpriteRenderer>();
+        // SpriteRenderer sr = block_down.GetComponent<SpriteRenderer>();
         //   sr.material = mat;
 
         int x = (int)chunkPos.x;
@@ -299,9 +297,9 @@ public class WorldGenerator : MonoBehaviour
         {
             var startFrom = -1000;
             var ends = 1000;
-            var prevPos = new Vector2(startFrom, perlinNoizeGenerator.GetHeight(0));
+            var prevPos = new Vector2(startFrom, perlinNoizeGenerator.GetHeight(startFrom));
             var nextPos = new Vector2(0, 0);
-            for (int x = startFrom; x < 1000; x++)
+            for (int x = startFrom; x < ends; x++)
             {
                 nextPos.x = x;
                 nextPos.y = perlinNoizeGenerator.GetHeight(x);

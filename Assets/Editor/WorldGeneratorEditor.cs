@@ -6,11 +6,11 @@ namespace Sandbox
     [CustomEditor(typeof(WorldGenerator))]
     public class WorldGeneratorEditor : Editor
     {
-        private SerializedProperty player;
+        //private SerializedProperty player;
         private WorldGenerator script;
         void OnEnable()
         {
-            player = serializedObject.FindProperty("player");
+            //player = serializedObject.FindProperty("player");
             script = (WorldGenerator)target;
         }
 
