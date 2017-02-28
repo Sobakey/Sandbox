@@ -48,9 +48,13 @@ public class Chunk
                 var absoluteY = y + (coords.y * size);
                 if (absoluteY <= pHeight)
                 {
-                    if (absoluteY == pHeight - 1 && absoluteY < 100)
+                    if (absoluteY == pHeight - 1 && absoluteY < 100 )
                     {
                         blocks[x, y] = blockManager.FindBlock(1); //grass
+                    }
+                    if ((absoluteY == pHeight || absoluteY == pHeight-1) && absoluteY > 250)
+                    {
+                        blocks[x, y] = blockManager.FindBlock(5); //snow
                     }
                     else if (absoluteY == pHeight && absoluteY < 100)
                     {
@@ -59,17 +63,17 @@ public class Chunk
                             blocks[x, y] = blockManager.FindBlock(4); //tall_grass
                         }
                     }
-                    else if (absoluteY < pHeight - Random.Range(4, 16) || absoluteY > pHeight - 1 || absoluteY > 100)
+                    else if (absoluteY < pHeight - Random.Range(4, 16) || absoluteY > pHeight - 1  || absoluteY > 100)
                     {
                         blocks[x, y] = blockManager.FindBlock(3); //stone
                     }
-                    else
+                    else 
                     {
                         blocks[x, y] = blockManager.FindBlock(2); //dirt
                     }
                     IsEmpty = false;
                 }
-                else
+                else  
                 {
                     blocks[x, y] = blockManager.FindBlock(0);
                 }
