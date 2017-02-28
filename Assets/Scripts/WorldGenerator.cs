@@ -159,7 +159,7 @@ public class WorldGenerator : MonoBehaviour
 
     private void ToMoveBack(GameObject block)
     {
-        block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, block.transform.position.z + 1);
+        block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, 1);
         BoxCollider2D bc = block.GetComponent<BoxCollider2D>();
         bc.isTrigger = true;
         // bc.enabled = false;
@@ -168,7 +168,7 @@ public class WorldGenerator : MonoBehaviour
         block.layer = 8;
     }
 
-    public void DestroyBlock(GameObject block, GameObject block_down)
+    public void DestroyBlock(GameObject block)
     {
         Vector3 blockPos = block.transform.position;
         Vector2Int chunkPos = Chunk.GetChunkCoordAtPos(blockPos);

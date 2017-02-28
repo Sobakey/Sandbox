@@ -6,8 +6,8 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour {
 
     public int direction = 0;
-    public KeyCode leftKey, rightKey, jumpKey, InventoryKey;
-    public float movementSpeed = 3f;
+    public KeyCode leftKey, rightKey, jumpKey, InventoryKey, RunKey;
+    public float movementSpeed = 7f;
     public float jumpForce = 250f;
     public LayerMask groundLayer;
     public float groundCheckDistance = 0.30f;
@@ -20,8 +20,10 @@ public class PlayerController : MonoBehaviour {
     private Hotbar hotbar;
     private WorldGenerator worldGen;
     private BlockManager blockManager;
-	
-	void Start () {
+    private bool isRunning;
+
+
+    void Start () {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         guiManager = GameObject.Find("GUI").GetComponent<GUIManager>();
@@ -54,13 +56,15 @@ public class PlayerController : MonoBehaviour {
 
     private void UpdateControls()
     {
-        if (Input.GetKey(leftKey))
+        if (Input.GetKey(leftKey)||Input.GetKey(KeyCode.LeftArrow))
         {
             SetDirection(-1);
+           
         }
-        else if (Input.GetKey(rightKey))
+        else if (Input.GetKey(rightKey) || Input.GetKey(KeyCode.RightArrow))
         {
             SetDirection(1);
+           
         }
         else
         {
@@ -84,6 +88,24 @@ public class PlayerController : MonoBehaviour {
                 guiManager.ShowInventory(true);
             }
         }
+
+        // клавиша ускорения -->
+        if (Input.GetKey(leftKey) && Input.GetKey(RunKey))
+        {
+            isRunning = true;
+            movementSpeed = 14f;
+        }
+        if (Input.GetKey(rightKey) && Input.GetKey(RunKey))
+        {
+            isRunning = true;
+            movementSpeed = 14f;
+        }
+        if (!Input.GetKey(RunKey) && isRunning)
+        {
+            isRunning = false;
+            movementSpeed = 7f;
+        }
+        //<--
     }
 
     public void HoldItem(Sprite sprite, float size)
@@ -117,7 +139,7 @@ public class PlayerController : MonoBehaviour {
 
                 if (hit.collider.gameObject.tag == "Block" || hit.collider.gameObject.tag == "tall_grass")
                 {
-                    GameObject.Find("World").GetComponent<WorldGenerator>().DestroyBlock(hit.collider.gameObject, hit_down.collider.gameObject);
+                    GameObject.Find("World").GetComponent<WorldGenerator>().DestroyBlock(hit.collider.gameObject);
                 }
             }
         }
