@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Chunk  {
+public class Chunk
+{
 
     public static int size = 32;
     public Block[,] blocks;
@@ -12,9 +13,10 @@ public class Chunk  {
 
     public Vector2Int coords;
 
-    public bool IsEmpty {get; private set;}
+    public bool IsEmpty { get; private set; }
     //TODO: Код реализован только для горизонтальной оси
-    public static Vector2Int GetChunkCoordAtPos(Vector3 pos){
+    public static Vector2Int GetChunkCoordAtPos(Vector3 pos)
+    {
         return new Vector2Int(Mathf.FloorToInt(pos.x / Chunk.size), Mathf.FloorToInt(pos.y / Chunk.size));
     }
 
@@ -36,7 +38,7 @@ public class Chunk  {
     }
 
     public void GenerateBlocks(PerlinNoizeGenerator perlinNoizeGenerator)
-    {  
+    {
         for (int x = 0; x < size; x++)
         {
             float pHeight = perlinNoizeGenerator.GetHeight(x + (coords.x * size));
@@ -46,24 +48,24 @@ public class Chunk  {
                 var absoluteY = y + (coords.y * size);
                 if (absoluteY <= pHeight)
                 {
-                    if (absoluteY == pHeight - 1)
+                    if (absoluteY == pHeight - 1 && absoluteY < 100)
                     {
                         blocks[x, y] = blockManager.FindBlock(1); //grass
                     }
-                    else if (absoluteY == pHeight)
+                    else if (absoluteY == pHeight && absoluteY < 100)
                     {
                         if (Random.value < 0.4f)
                         {
                             blocks[x, y] = blockManager.FindBlock(4); //tall_grass
                         }
                     }
-                    else if (absoluteY < pHeight - Random.Range(4, 16) || absoluteY > pHeight - 1)
+                    else if (absoluteY < pHeight - Random.Range(4, 16) || absoluteY > pHeight - 1 || absoluteY > 100)
                     {
-                        blocks[x, y] = blockManager.FindBlock(3); //dirt
+                        blocks[x, y] = blockManager.FindBlock(3); //stone
                     }
                     else
                     {
-                        blocks[x, y] = blockManager.FindBlock(2); //stone
+                        blocks[x, y] = blockManager.FindBlock(2); //dirt
                     }
                     IsEmpty = false;
                 }
@@ -72,7 +74,6 @@ public class Chunk  {
                     blocks[x, y] = blockManager.FindBlock(0);
                 }
             }
-           
         }
     }
 
@@ -84,18 +85,20 @@ public class Chunk  {
         {
             for (int y = 0; y < size; y++)
             {
-				
-				if (parentObj == null) {
+
+                if (parentObj == null)
+                {
                     var obj = blockObjects[x, y];
-                    if(obj != null){                       
-					    parentObj = blockObjects [x, y].transform.parent;
+                    if (obj != null)
+                    {
+                        parentObj = blockObjects[x, y].transform.parent;
                     }
-				}
+                }
                 blocks[x, y] = null;
                 GameObject.Destroy(blockObjects[x, y]);
             }
         }
-        if(parentObj != null)
+        if (parentObj != null)
             GameObject.Destroy(parentObj.gameObject);
     }
 
