@@ -1,20 +1,22 @@
-﻿using Sandbox;
+﻿using System;
+using Sandbox;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 public class Chunk
 {
-
     public static int size = 32;
     public Block[,] blocks;
     public GameObject[,] blockObjects;
     private BlockManager blockManager;
 
+	public GameObject gameObject;
     public Vector2Int coords;
 
     public bool IsEmpty { get; private set; }
-    //TODO: Код реализован только для горизонтальной оси
     public static Vector2Int GetChunkCoordAtPos(Vector3 pos)
     {
         return new Vector2Int(Mathf.FloorToInt(pos.x / Chunk.size), Mathf.FloorToInt(pos.y / Chunk.size));
@@ -28,6 +30,14 @@ public class Chunk
         return v;
     }
 
+	public Vector2 GetWorldPos()
+	{
+		int xPos = Mathf.FloorToInt(coords.x);
+		int yPos = Mathf.FloorToInt(coords.y);
+
+		return new Vector2(xPos, yPos);
+	}
+
     public Chunk(BlockManager blockManager, Vector2Int position)
     {
         IsEmpty = true;
@@ -35,13 +45,15 @@ public class Chunk
         this.coords = position;
         blocks = new Block[size, size];
         blockObjects = new GameObject[size, size];
+
+	    gameObject = new GameObject();
     }
 
-    public void GenerateBlocks(PerlinNoizeGenerator perlinNoizeGenerator)
+    public void GenerateBlocksInfos(PerlinNoizeGenerator perlinNoizeGenerator)
     {
         for (int x = 0; x < size; x++)
         {
-            float pHeight = perlinNoizeGenerator.GetHeight(x + (coords.x * size));
+            int pHeight = perlinNoizeGenerator.GetHeight(x + (coords.x * size));
 
             for (int y = 0; y < size; y++)
             {
@@ -81,6 +93,37 @@ public class Chunk
         }
     }
 
+	public void GenerateTiles()
+	{
+		for (int x = 0; x < size; x++)
+		{
+			for (int y = 0; y < size; y++)
+			{
+				if (blocks[x, y] != null)
+				{
+					CreateTile(x, y);
+				}
+			}
+		}
+	}
+
+	public void CreateTile(int x, int y)
+	{
+		var blockTag = "Block";
+		bool isTrigger = false;
+		var position = new Vector3((coords.x * Chunk.size) + x, (coords.y * Chunk.size) + y);
+
+		if (blocks[x, y].isSolid != true)
+		{
+			isTrigger = true;
+			blockTag = "tall_grass";
+		}
+		var block = BlockManager.GetBlock(gameObject.transform, blocks[x, y].GetSprite(), position,
+			blocks[x, y].display_name, blockTag, isTrigger);
+		block.layer = 13;
+		blockObjects[x, y] = block;
+	}
+
     public void Destroy()
     {
         //TODO убирать в память чанки и обьекты на них
@@ -90,20 +133,18 @@ public class Chunk
             for (int y = 0; y < size; y++)
             {
 
-                if (parentObj == null)
-                {
+
                     var obj = blockObjects[x, y];
                     if (obj != null)
                     {
                         parentObj = blockObjects[x, y].transform.parent;
+	                    BlockManager.DestroyBlock(blockObjects[x, y]);
                     }
-                }
                 blocks[x, y] = null;
-                GameObject.Destroy(blockObjects[x, y]);
             }
         }
-        if (parentObj != null)
-            GameObject.Destroy(parentObj.gameObject);
+	    //пока удаляем, после надо думать как организовать хранение в памяти, а после в файле
+        Object.Destroy(gameObject);
     }
 
 }
