@@ -1,10 +1,6 @@
-﻿//#define SPAWN_ONLY_SURFACE
+﻿#define DRAW_GIZMOS
+#undef DRAW_GIZMOS
 
-using Sandbox;
-using System.Linq;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 
 [ExecuteInEditMode]
@@ -12,12 +8,9 @@ public class WorldGenerator : MonoBehaviour
 {
 	public GameObject player;
 
-	//Количиство чанков которые должны присутствовать на сцене одновременно
+	//Количиство чанков вокруг игрока, которые должны присутствовать на сцене одновременно
 	public int viewDistance = 3;
 
-	public Material mat;
-	public Material matDark;
-	public Material matBG;
 	public int seed;
 	public bool isRandomSeed = true;
 	public int worldHeight = 255;
@@ -27,17 +20,15 @@ public class WorldGenerator : MonoBehaviour
 	public float lacunarity = 1.0f;
 	private BlockManager blockManager;
 
-	private ItemDatabase itemDatabase;
 	private PerlinNoizeGenerator perlinNoizeGenerator;
 
 	void Start()
 	{
 		blockManager = GameObject.Find("GameManager").GetComponent<BlockManager>();
-		itemDatabase = GameObject.Find("GameManager").GetComponent<ItemDatabase>();
 		Rebuild();
 		if (Application.isPlaying)
 		{
-			var playerX = Chunk.size / 2;
+			var playerX = ChunkManager.chunkSize / 2;
 			var playerPos = new Vector2(playerX, perlinNoizeGenerator.GetHeight(playerX) + 1);
 			player = SpawnPlayer(playerPos);
 		}
@@ -45,18 +36,17 @@ public class WorldGenerator : MonoBehaviour
 
 	public void Rebuild()
 	{
-
 		if (isRandomSeed)
 		{
 			seed = Random.Range(-5000, 5000);
 		}
 		ChunkManager.Instance.Reset();
 
-		perlinNoizeGenerator = new PerlinNoizeGenerator(new Vector2Int(seed, seed), worldHeight, scale, octaves, persistance,
-			lacunarity);
+		perlinNoizeGenerator = new PerlinNoizeGenerator(new Vector2Int(seed, seed), worldHeight, scale, octaves,
+			persistance, lacunarity);
 		if (Application.isPlaying)
 		{
-			var playerX = Chunk.size / 2;
+			var playerX = ChunkManager.chunkSize / 2;
 			player.transform.position = new Vector2(playerX, perlinNoizeGenerator.GetHeight(playerX) + 1);
 		}
 	}
@@ -67,145 +57,12 @@ public class WorldGenerator : MonoBehaviour
 		return player_object;
 	}
 
-	private Chunk ChunkAtPos(Vector2Int pos)
-	{
-		Chunk chunk;
-		if (ChunkManager.Instance.TryGetChunk(pos, out chunk))
-		{
-			return chunk;
-		}
-
-		return null;
-	}
-
-	private void ToMoveBack(GameObject block)
-	{
-		block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, 1);
-		BoxCollider2D bc = block.GetComponent<BoxCollider2D>();
-		bc.isTrigger = true;
-		// bc.enabled = false;
-		SpriteRenderer srBG = block.GetComponent<SpriteRenderer>();
-		srBG.material = matBG;
-		block.layer = 8;
-	}
-
-	public void DestroyBlock(GameObject block)
-	{
-		Vector3 blockPos = block.transform.position;
-		Vector2Int chunkPos = ChunkManager.Instance.GetChunkCoordAtPos(blockPos);
-
-		// SpriteRenderer sr = block_down.GetComponent<SpriteRenderer>();
-		//   sr.material = mat;
-
-		int x = (int) chunkPos.x;
-		int y = (int) chunkPos.y;
-
-		Chunk chunk = ChunkAtPos(chunkPos);
-		if (chunk.blocks[x, y] != null)
-		{
-			foreach (Drop drop in chunk.blocks[x, y].drops)
-			{
-				if (drop.DropChanceSucess())
-				{
-					GameObject dropObject = new GameObject();
-					dropObject.transform.position = block.transform.position;
-					dropObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-					dropObject.AddComponent<SpriteRenderer>().sprite = itemDatabase.FindItem(drop.itemName).sprite;
-					dropObject.AddComponent<PolygonCollider2D>();
-					dropObject.AddComponent<Rigidbody2D>();
-					dropObject.layer = LayerMask.NameToLayer("drop");
-					dropObject.AddComponent<Magnetism>().target = GameObject.FindWithTag("player").transform;
-					dropObject.name = drop.itemName;
-				}
-			}
-		}
-
-		if (block.name == "grass")
-		{
-			GameObject[] tallGrass = GameObject.FindGameObjectsWithTag("tall_grass");
-
-			if (chunk.blocks[x, y + 1] != null)
-			{
-				foreach (GameObject grass in tallGrass)
-				{
-					if (grass.transform.position.x == block.transform.position.x)
-					{
-						GameObject.Destroy(grass); //with tall_grass
-						ToMoveBack(block);
-						chunk.blocks[x, y + 1] = blockManager.FindBlock(0);
-						//GameObject.Destroy(block);
-					}
-				}
-			}
-			else
-			{
-				ToMoveBack(block);
-				chunk.blocks[x, y] = blockManager.FindBlock(0); //without tall_grass
-				//GameObject.Destroy(block);
-			}
-		}
-		else
-		{
-			ToMoveBack(block);
-			chunk.blocks[x, y] = blockManager.FindBlock(0);
-			if (block.gameObject.CompareTag("tall_grass"))
-			{
-				GameObject.Destroy(block);
-			}
-		}
-	}
-
-	public void PlaceBlock(Block block, Vector3 pos /*, GameObject go*/)
-	{
-		Chunk chunk = ChunkAtPos(pos.ToInt());
-		Vector2Int tilePos = ChunkManager.Instance.GetTilePositionAtPos(pos);
-
-		chunk.blocks[tilePos.x, tilePos.y] = block;
-		chunk.CreateTile(tilePos.x, tilePos.y);
-	}
-
 	void Update()
 	{
 		if (Application.isPlaying)
 		{
-			var playerPos = ChunkManager.Instance.GetChunkCoordAtPos(player.transform.position);
-			UpdateChunks(playerPos);
-
-			foreach (Chunk chunk in ChunkManager.Instance.Chunks)
-			{
-				var xDiff = Mathf.Abs(Mathf.Abs(chunk.coords.x) - Mathf.Abs(playerPos.x));
-				var yDiff = Mathf.Abs(Mathf.Abs(chunk.coords.y) - Mathf.Abs(playerPos.y));
-				if (xDiff > viewDistance || yDiff > viewDistance)
-				{
-					chunk.Destroy();
-					ChunkManager.Instance.RemoveChunk(chunk);
-				}
-			}
-		}
-	}
-
-	void UpdateChunks(Vector2Int playerPos)
-	{
-		for (int x = playerPos.x - viewDistance; x <= playerPos.x + viewDistance; x++)
-		{
-			for (int y = playerPos.y - viewDistance; y <= playerPos.y + viewDistance; y++)
-			{
-				var pos = new Vector2Int(x, y);
-				if (!ChunkManager.Instance.HasChunkAtPos(pos))
-				{
-					Chunk newChunk = new Chunk(blockManager, pos);
-					newChunk.GenerateBlocksInfos(perlinNoizeGenerator);
-					if (!newChunk.IsEmpty)
-					{
-						StartCoroutine(newChunk.GenerateTiles());
-						ChunkManager.Instance.AddChunk(newChunk);
-					}
-					else
-					{
-						newChunk.Destroy();
-					}
-				}
-			}
+			ChunkManager.Instance.UpdateChunks(blockManager, perlinNoizeGenerator, player.transform.position,
+				viewDistance);
 		}
 	}
 
@@ -214,7 +71,7 @@ public class WorldGenerator : MonoBehaviour
 	/// </summary>
 	void OnDrawGizmos()
 	{
-		return;
+#if DRAW_GIZMOS
 		if (perlinNoizeGenerator != null)
 		{
 			var startFrom = -1000;
@@ -229,5 +86,6 @@ public class WorldGenerator : MonoBehaviour
 				prevPos = nextPos;
 			}
 		}
+#endif
 	}
 }

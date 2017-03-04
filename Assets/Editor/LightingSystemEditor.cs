@@ -90,7 +90,7 @@ namespace Light2D
                 // else
                 // {
                 //     var halfFov = (cam.fieldOfView + _lightCameraFovAdd.floatValue)*Mathf.Deg2Rad/2f;
-                //     size = Mathf.Tan(halfFov)*_lightObstaclesDistance.floatValue*2;
+                //     chunkSize = Mathf.Tan(halfFov)*_lightObstaclesDistance.floatValue*2;
                 // }
                 //if (!Application.isPlaying)
                 {

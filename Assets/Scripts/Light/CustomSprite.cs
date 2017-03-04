@@ -126,7 +126,7 @@ namespace Light2D
         // }
 
         /// <summary>
-        /// Getting material from cache or instantiating new one.
+        /// Getting mainMaterial from cache or instantiating new one.
         /// </summary>
         /// <returns></returns>
         public Material GetOrCreateMaterial()
@@ -157,7 +157,7 @@ namespace Light2D
         }
         
         /// <summary>
-        /// Getting material from cache or instantiating new one.
+        /// Getting mainMaterial from cache or instantiating new one.
         /// </summary>
         /// <returns></returns>
         public static Material GetOrCreateMaterial(Material baseMaterial, Texture2D texture, out MaterialKey materialKey)
@@ -187,7 +187,7 @@ namespace Light2D
         }
 
         /// <summary>
-        /// Deleting material from cache with reference counting.
+        /// Deleting mainMaterial from cache with reference counting.
         /// </summary>
         /// <param name="key"></param>
         public static void ReleaseMaterial(MaterialKey key)
@@ -258,7 +258,7 @@ namespace Light2D
             var tex = Sprite.texture;
             var textureSize = new Point2(tex.width, tex.height);
             
-            // HACK: mipmap could cause texture padding sometimes so padded size of texture needs to be computed.
+            // HACK: mipmap could cause texture padding sometimes so padded chunkSize of texture needs to be computed.
             var realSize =
 #if UNITY_EDITOR || UNITY_STANDALONE
                 tex.mipmapCount <= 1
@@ -335,17 +335,17 @@ namespace Light2D
         }
 
         /// <summary>
-        /// Used as a value to material map to support reference counting.
+        /// Used as a value to mainMaterial map to support reference counting.
         /// </summary>
         public class MaterialValue
         {
             /// <summary>
-            /// Instantiated material from MaterialKey.Material with texture from MaterialKey.Texture.
+            /// Instantiated mainMaterial from MaterialKey.Material with texture from MaterialKey.Texture.
             /// </summary>
             public Material Material;
 
             /// <summary>
-            /// Count of CustomSprites using that material.
+            /// Count of CustomSprites using that mainMaterial.
             /// </summary>
             public int UsageCount;
 
@@ -357,7 +357,7 @@ namespace Light2D
         }
 
         /// <summary>
-        /// Used as a key to material map.
+        /// Used as a key to mainMaterial map.
         /// </summary>
         public class MaterialKey : IEquatable<MaterialKey>
         {
@@ -367,7 +367,7 @@ namespace Light2D
             public Texture2D Texture;
 
             /// <summary>
-            /// Non instantiated material.
+            /// Non instantiated mainMaterial.
             /// </summary>
             public Material Material;
 

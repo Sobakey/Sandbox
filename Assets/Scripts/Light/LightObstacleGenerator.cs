@@ -9,7 +9,7 @@ namespace Light2D
     /// <summary>
     /// That class is generating obstacles for object it attached to.
     /// Obect must have MeshRenderer, SpriteRenderer or CustomSprite script from which texture for obstacle will be grabbed.
-    /// For rendering obstacle of SpriteRenderer and CustomSprite LightObstacleSprite with material "Material" (material with dual color shader by default) will be used.
+    /// For rendering obstacle of SpriteRenderer and CustomSprite LightObstacleSprite with mainMaterial "Material" (mainMaterial with dual color shader by default) will be used.
     /// For objects with MeshRenderer "Material" property is ignored. MeshRenderer.sharedMaterial is used instead.
     /// </summary>
     [ExecuteInEditMode]
