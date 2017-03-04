@@ -10,7 +10,6 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class WorldGenerator : MonoBehaviour
 {
-	public LayerMask dropLayer;
 	public GameObject player;
 
 	//Количиство чанков которые должны присутствовать на сцене одновременно
@@ -27,7 +26,7 @@ public class WorldGenerator : MonoBehaviour
 	public float persistance = 1.0f;
 	public float lacunarity = 1.0f;
 	private BlockManager blockManager;
-	private Dictionary<Vector2Int, Chunk> visibleChunks;
+
 	private ItemDatabase itemDatabase;
 	private PerlinNoizeGenerator perlinNoizeGenerator;
 
@@ -46,19 +45,12 @@ public class WorldGenerator : MonoBehaviour
 
 	public void Rebuild()
 	{
-		if (visibleChunks != null)
-		{
-			foreach (var key in visibleChunks.Keys.ToArray())
-			{
-				visibleChunks[key].Destroy();
-				visibleChunks.Remove(key);
-			}
-		}
+
 		if (isRandomSeed)
 		{
 			seed = Random.Range(-5000, 5000);
 		}
-		visibleChunks = new Dictionary<Vector2Int, Chunk>();
+		ChunkManager.Instance.Reset();
 
 		perlinNoizeGenerator = new PerlinNoizeGenerator(new Vector2Int(seed, seed), worldHeight, scale, octaves, persistance,
 			lacunarity);
@@ -78,7 +70,7 @@ public class WorldGenerator : MonoBehaviour
 	private Chunk ChunkAtPos(Vector2Int pos)
 	{
 		Chunk chunk;
-		if (visibleChunks.TryGetValue(pos, out chunk))
+		if (ChunkManager.Instance.TryGetChunk(pos, out chunk))
 		{
 			return chunk;
 		}
@@ -100,7 +92,7 @@ public class WorldGenerator : MonoBehaviour
 	public void DestroyBlock(GameObject block)
 	{
 		Vector3 blockPos = block.transform.position;
-		Vector2Int chunkPos = Chunk.GetChunkCoordAtPos(blockPos);
+		Vector2Int chunkPos = ChunkManager.Instance.GetChunkCoordAtPos(blockPos);
 
 		// SpriteRenderer sr = block_down.GetComponent<SpriteRenderer>();
 		//   sr.material = mat;
@@ -121,7 +113,7 @@ public class WorldGenerator : MonoBehaviour
 					dropObject.AddComponent<SpriteRenderer>().sprite = itemDatabase.FindItem(drop.itemName).sprite;
 					dropObject.AddComponent<PolygonCollider2D>();
 					dropObject.AddComponent<Rigidbody2D>();
-					dropObject.layer = dropLayer;
+					dropObject.layer = LayerMask.NameToLayer("drop");
 					dropObject.AddComponent<Magnetism>().target = GameObject.FindWithTag("player").transform;
 					dropObject.name = drop.itemName;
 				}
@@ -166,7 +158,7 @@ public class WorldGenerator : MonoBehaviour
 	public void PlaceBlock(Block block, Vector3 pos /*, GameObject go*/)
 	{
 		Chunk chunk = ChunkAtPos(pos.ToInt());
-		Vector2Int tilePos = Chunk.GetTilePositionAtPos(pos);
+		Vector2Int tilePos = ChunkManager.Instance.GetTilePositionAtPos(pos);
 
 		chunk.blocks[tilePos.x, tilePos.y] = block;
 		chunk.CreateTile(tilePos.x, tilePos.y);
@@ -176,17 +168,17 @@ public class WorldGenerator : MonoBehaviour
 	{
 		if (Application.isPlaying)
 		{
-			var playerPos = Chunk.GetChunkCoordAtPos(player.transform.position);
+			var playerPos = ChunkManager.Instance.GetChunkCoordAtPos(player.transform.position);
 			UpdateChunks(playerPos);
 
-			foreach (Chunk chunk in visibleChunks.Values.ToArray())
+			foreach (Chunk chunk in ChunkManager.Instance.Chunks)
 			{
 				var xDiff = Mathf.Abs(Mathf.Abs(chunk.coords.x) - Mathf.Abs(playerPos.x));
 				var yDiff = Mathf.Abs(Mathf.Abs(chunk.coords.y) - Mathf.Abs(playerPos.y));
 				if (xDiff > viewDistance || yDiff > viewDistance)
 				{
 					chunk.Destroy();
-					visibleChunks.Remove(chunk.coords);
+					ChunkManager.Instance.RemoveChunk(chunk);
 				}
 			}
 		}
@@ -199,14 +191,14 @@ public class WorldGenerator : MonoBehaviour
 			for (int y = playerPos.y - viewDistance; y <= playerPos.y + viewDistance; y++)
 			{
 				var pos = new Vector2Int(x, y);
-				if (!visibleChunks.ContainsKey(pos))
+				if (!ChunkManager.Instance.HasChunkAtPos(pos))
 				{
 					Chunk newChunk = new Chunk(blockManager, pos);
 					newChunk.GenerateBlocksInfos(perlinNoizeGenerator);
 					if (!newChunk.IsEmpty)
 					{
-						StartCoroutine(GenerateTiles(newChunk));
-						visibleChunks.Add(pos, newChunk);
+						StartCoroutine(newChunk.GenerateTiles());
+						ChunkManager.Instance.AddChunk(newChunk);
 					}
 					else
 					{
@@ -216,26 +208,13 @@ public class WorldGenerator : MonoBehaviour
 			}
 		}
 	}
-	public IEnumerator GenerateTiles(Chunk chunk)
-	{
-		for (int x = 0; x < Chunk.size; x++)
-		{
-			for (int y = 0; y < Chunk.size; y++)
-			{
-				if (chunk.blocks[x, y] != null)
-				{
-					chunk.CreateTile(x, y);
-				}
-				if (Time.time > .03f)
-					yield return null;
-			}
-		}
-	}
+
 	/// <summary>
 	/// Callback to draw gizmos that are pickable and always drawn.
 	/// </summary>
 	void OnDrawGizmos()
 	{
+		return;
 		if (perlinNoizeGenerator != null)
 		{
 			var startFrom = -1000;

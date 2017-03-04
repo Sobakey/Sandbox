@@ -554,7 +554,7 @@ namespace Light2D
             //         if (lightSprite.RendererEnabled &&
             //             GeometryUtility.TestPlanesAABB(cameraPlanes, lightSprite.Renderer.bounds))
             //         {
-            //             _lightSpritesCache.Add(lightSprite);
+            //             _lightSpritesCache.AddChunk(lightSprite);
             //         }
             //     }
 

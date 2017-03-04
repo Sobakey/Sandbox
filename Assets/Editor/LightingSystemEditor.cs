@@ -123,11 +123,11 @@ namespace Light2D
 
             // if (cam == null || cam.orthographic)
             // {
-                EditorGUILayout.PropertyField(_lightCameraSizeAdd, new GUIContent("Light Camera Size Add"));
+                EditorGUILayout.PropertyField(_lightCameraSizeAdd, new GUIContent("Light Camera Size AddChunk"));
             // }
             // else
             // {
-            //     EditorGUILayout.PropertyField(_lightCameraFovAdd, new GUIContent("Light Camera Fov Add"));
+            //     EditorGUILayout.PropertyField(_lightCameraFovAdd, new GUIContent("Light Camera Fov AddChunk"));
             //     EditorGUILayout.PropertyField(_lightObstaclesDistance, new GUIContent("Camera To Light Obstacles Distance"));
             // }
 

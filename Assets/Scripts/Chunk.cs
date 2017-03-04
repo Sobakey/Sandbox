@@ -17,18 +17,7 @@ public class Chunk
     public Vector2Int coords;
 
     public bool IsEmpty { get; private set; }
-    public static Vector2Int GetChunkCoordAtPos(Vector3 pos)
-    {
-        return new Vector2Int(Mathf.FloorToInt(pos.x / Chunk.size), Mathf.FloorToInt(pos.y / Chunk.size));
-    }
 
-    public static Vector2Int GetTilePositionAtPos(Vector3 pos)
-    {
-        var v = GetChunkCoordAtPos(pos);
-        v.x += Mathf.FloorToInt((pos.x % Chunk.size));
-        v.y += Mathf.FloorToInt((pos.y % Chunk.size));
-        return v;
-    }
 
 	public Vector2 GetWorldPos()
 	{
@@ -93,7 +82,7 @@ public class Chunk
         }
     }
 
-	public void GenerateTiles()
+	public IEnumerator GenerateTiles()
 	{
 		for (int x = 0; x < size; x++)
 		{
@@ -105,6 +94,7 @@ public class Chunk
 				}
 			}
 		}
+		yield return null;
 	}
 
 	public void CreateTile(int x, int y)
@@ -127,7 +117,6 @@ public class Chunk
     public void Destroy()
     {
         //TODO убирать в память чанки и обьекты на них
-        Transform parentObj = null;
         for (int x = 0; x < size; x++)
         {
             for (int y = 0; y < size; y++)
@@ -137,7 +126,6 @@ public class Chunk
                     var obj = blockObjects[x, y];
                     if (obj != null)
                     {
-                        parentObj = blockObjects[x, y].transform.parent;
 	                    BlockManager.DestroyBlock(blockObjects[x, y]);
                     }
                 blocks[x, y] = null;

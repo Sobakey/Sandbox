@@ -67,7 +67,7 @@ public class BlockManager : MonoBehaviour
 		{
 			blockObject = new GameObject();
 		}
-		blockObject.transform.SetParent(parent);
+		blockObject.transform.parent = parent;
 		var sr = cached ? blockObject.GetComponent<SpriteRenderer>() : blockObject.AddComponent<SpriteRenderer>();
 		sr.sprite = sprite;
 		blockObject.name = displayName;
