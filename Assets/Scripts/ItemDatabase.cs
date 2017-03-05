@@ -18,4 +18,11 @@ public class ItemDatabase : MonoBehaviour {
 
         return null;
     }
+
+	private static ItemDatabase instance;
+
+	public static ItemDatabase Instance
+	{
+		get { return instance ?? (GameObject.Find("GameManager").GetComponent<ItemDatabase>()); }
+	}
 }

@@ -34,6 +34,6 @@ public class PerlinNoizeGenerator
 			frequency *= lacunarity;
 		}
 
-		return Mathf.FloorToInt(Mathf.InverseLerp(-worldHeight /2, worldHeight / 2, noizeHeight * worldHeight) * worldHeight);
+		return Mathf.FloorToInt(Mathf.InverseLerp(-worldHeight * .5f, worldHeight * .5f, noizeHeight * worldHeight) * worldHeight);
 	}
 }
