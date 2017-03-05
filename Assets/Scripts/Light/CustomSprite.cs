@@ -258,7 +258,7 @@ namespace Light2D
             var tex = Sprite.texture;
             var textureSize = new Point2(tex.width, tex.height);
             
-            // HACK: mipmap could cause texture padding sometimes so padded chunkSize of texture needs to be computed.
+            // HACK: mipmap could cause texture padding sometimes so padded CHUNK_SIZE of texture needs to be computed.
             var realSize =
 #if UNITY_EDITOR || UNITY_STANDALONE
                 tex.mipmapCount <= 1

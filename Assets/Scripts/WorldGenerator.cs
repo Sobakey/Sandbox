@@ -28,7 +28,7 @@ public class WorldGenerator : MonoBehaviour
 		Rebuild();
 		if (Application.isPlaying)
 		{
-			var playerX = ChunkManager.chunkSize / 2;
+			var playerX = ChunkManager.CHUNK_SIZE / 2;
 			var playerPos = new Vector2(playerX, perlinNoizeGenerator.GetHeight(playerX) + 1);
 			player = SpawnPlayer(playerPos);
 		}
@@ -46,7 +46,7 @@ public class WorldGenerator : MonoBehaviour
 			persistance, lacunarity);
 		if (Application.isPlaying)
 		{
-			var playerX = ChunkManager.chunkSize / 2;
+			var playerX = ChunkManager.CHUNK_SIZE / 2;
 			player.transform.position = new Vector2(playerX, perlinNoizeGenerator.GetHeight(playerX) + 1);
 		}
 	}

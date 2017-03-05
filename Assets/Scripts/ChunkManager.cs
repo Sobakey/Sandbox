@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ChunkManager
 {
-	public static int chunkSize = 32;
+	public const int CHUNK_SIZE = 32;
 	private static ChunkManager instance;
 
 	public static ChunkManager Instance
@@ -39,7 +39,7 @@ public class ChunkManager
 
 	public Vector2Int GetChunkCoordAtPos(Vector3 pos)
 	{
-		return new Vector2Int(Mathf.FloorToInt(pos.x / chunkSize), Mathf.FloorToInt(pos.y / chunkSize));
+		return new Vector2Int(Mathf.FloorToInt(pos.x / CHUNK_SIZE), Mathf.FloorToInt(pos.y / CHUNK_SIZE));
 	}
 
 

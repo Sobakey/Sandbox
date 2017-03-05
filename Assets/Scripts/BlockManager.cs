@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Configuration;
 using UnityEngine;
 
@@ -61,7 +63,7 @@ public class BlockManager : MonoBehaviour
 	{
 		var blockTag = "Block";
 		bool isTrigger = false;
-		var position = new Vector3((chunk.coords.x * ChunkManager.chunkSize) + pos.x + .5f, (chunk.coords.y * ChunkManager.chunkSize) + pos.y + .5f);
+		var position = new Vector3((chunk.coords.x * ChunkManager.CHUNK_SIZE) + pos.x + .5f, (chunk.coords.y * ChunkManager.CHUNK_SIZE) + pos.y + .5f);
 
 		if (chunk.blocks[pos.x, pos.y].isSolid != true)
 		{
@@ -87,10 +89,16 @@ public class BlockManager : MonoBehaviour
 
 	public Vector2Int GetTilePositionAtPos(Vector3 pos)
 	{
-		var v = ChunkManager.Instance.GetChunkCoordAtPos(pos);
-		v.x += Mathf.RoundToInt(pos.x % ChunkManager.chunkSize);
-		v.y += Mathf.RoundToInt(pos.y % ChunkManager.chunkSize);
-		return v;
+		Chunk chunk;
+		if (ChunkManager.Instance.TryGetChunk(pos, out chunk))
+		{
+			var c = chunk.coords;
+			var tileCoord = chunk.GetTileCoord(pos);
+			c.x += tileCoord.x;
+			c.y += tileCoord.y;
+			return c;
+		}
+		throw new Exception("There is no chunk at this pos");
 	}
 
 	public GameObject GetTileAtPos(Vector2 pos)

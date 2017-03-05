@@ -25,8 +25,8 @@ public class Chunk
 
 	public Vector2Int GetTileCoord(Vector2 pos)
 	{
-		//TODO: не работает для отрицательных координат, элегантного решения быстро не подобрал.
-		return new Vector2Int(Mathf.FloorToInt(pos.x % ChunkManager.chunkSize), Mathf.FloorToInt(pos.y % ChunkManager.chunkSize));
+		return new Vector2Int((int)((ChunkManager.CHUNK_SIZE + (pos.x % ChunkManager.CHUNK_SIZE)) % ChunkManager.CHUNK_SIZE),
+			(int)((ChunkManager.CHUNK_SIZE + (pos.y % ChunkManager.CHUNK_SIZE)) % ChunkManager.CHUNK_SIZE));
 	}
 
 	public Chunk(BlockManager blockManager, Vector2Int position)
@@ -34,21 +34,20 @@ public class Chunk
 		IsEmpty = true;
 		this.blockManager = blockManager;
 		this.coords = position;
-		blocks = new Block[ChunkManager.chunkSize, ChunkManager.chunkSize];
-		blockObjects = new GameObject[ChunkManager.chunkSize, ChunkManager.chunkSize];
-
+		blocks = new Block[ChunkManager.CHUNK_SIZE, ChunkManager.CHUNK_SIZE];
+		blockObjects = new GameObject[ChunkManager.CHUNK_SIZE, ChunkManager.CHUNK_SIZE];
 		gameObject = new GameObject();
 	}
 
 	public void GenerateBlocksInfos(PerlinNoizeGenerator perlinNoizeGenerator)
 	{
-		for (int x = 0; x < ChunkManager.chunkSize; x++)
+		for (int x = 0; x < ChunkManager.CHUNK_SIZE; x++)
 		{
-			int pHeight = perlinNoizeGenerator.GetHeight(x + (coords.x * ChunkManager.chunkSize));
+			int pHeight = perlinNoizeGenerator.GetHeight(x + (coords.x * ChunkManager.CHUNK_SIZE));
 
-			for (int y = 0; y < ChunkManager.chunkSize; y++)
+			for (int y = 0; y < ChunkManager.CHUNK_SIZE; y++)
 			{
-				var absoluteY = y + (coords.y * ChunkManager.chunkSize);
+				var absoluteY = y + (coords.y * ChunkManager.CHUNK_SIZE);
 				if (absoluteY <= pHeight)
 				{
 					if (absoluteY == pHeight - 1 && absoluteY < 100)
@@ -86,9 +85,9 @@ public class Chunk
 
 	public void GenerateTiles()
 	{
-		for (int x = 0; x < ChunkManager.chunkSize; x++)
+		for (int x = 0; x < ChunkManager.CHUNK_SIZE; x++)
 		{
-			for (int y = 0; y < ChunkManager.chunkSize; y++)
+			for (int y = 0; y < ChunkManager.CHUNK_SIZE; y++)
 			{
 				if (blocks[x, y] != null)
 				{
@@ -108,9 +107,9 @@ public class Chunk
 	public void Destroy()
 	{
 		//TODO убирать в память чанки и обьекты на них
-		for (int x = 0; x < ChunkManager.chunkSize; x++)
+		for (int x = 0; x < ChunkManager.CHUNK_SIZE; x++)
 		{
-			for (int y = 0; y < ChunkManager.chunkSize; y++)
+			for (int y = 0; y < ChunkManager.CHUNK_SIZE; y++)
 			{
 				var obj = blockObjects[x, y];
 				if (obj != null)
