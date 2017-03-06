@@ -50,29 +50,31 @@ public class Chunk
 				var absoluteY = y + (coords.y * ChunkManager.CHUNK_SIZE);
 				if (absoluteY <= pHeight)
 				{
-					if (absoluteY == pHeight - 1 && absoluteY < 100)
+					if (absoluteY == pHeight && absoluteY < 100)
 					{
-						blocks[x, y] = blockManager.FindBlock(1); //grass
-					}
-					if ((absoluteY == pHeight || absoluteY == pHeight - 1) && absoluteY > 250)
+                        if (Random.value < 0.4f)
+                        {
+                            blocks[x, y] = blockManager.FindBlock(4); //tall_grass
+                        }
+                    }
+                    else if (absoluteY == pHeight-1 && absoluteY < 100)
+                    {
+                            blocks[x, y] = blockManager.FindBlock(1); //grass
+                    }
+                    else if (absoluteY < pHeight - Random.Range(4, 16) || absoluteY > pHeight - 1 || absoluteY > 100)
+                    {
+                        blocks[x, y] = blockManager.FindBlock(3); //stone
+                    }
+                    else
+                    {
+                        blocks[x, y] = blockManager.FindBlock(2); //dirt
+                    }
+                    if ((absoluteY == pHeight || absoluteY == pHeight - 1) && absoluteY > 250)
 					{
 						blocks[x, y] = blockManager.FindBlock(5); //snow
 					}
-					else if (absoluteY == pHeight && absoluteY < 100)
-					{
-						if (Random.value < 0.4f)
-						{
-							blocks[x, y] = blockManager.FindBlock(4); //tall_grass
-						}
-					}
-					else if (absoluteY < pHeight - Random.Range(4, 16) || absoluteY > pHeight - 1 || absoluteY > 100)
-					{
-						blocks[x, y] = blockManager.FindBlock(3); //stone
-					}
-					else
-					{
-						blocks[x, y] = blockManager.FindBlock(2); //dirt
-					}
+					
+					
 					IsEmpty = false;
 				}
 				else

@@ -33,7 +33,7 @@ public class PlayerController : MonoBehaviour
 		anim = GetComponent<Animator>();
 		guiManager = GameObject.Find("GUI").GetComponent<GUIManager>();
 		groundCheck = transform.FindChild("Ground_Checker");
-		hotbar = GameObject.Find("Hotbar").GetComponent<Hotbar>();
+	//	hotbar = GameObject.Find("Hotbar").GetComponent<Hotbar>();
 		worldGen = GameObject.Find("World").GetComponent<WorldGenerator>();
 		blockManager = GameObject.Find("GameManager").GetComponent<BlockManager>();
 		bounds = GetComponent<BoxCollider2D>().size;
