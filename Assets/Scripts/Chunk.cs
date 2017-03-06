@@ -58,25 +58,25 @@ public class Chunk
 					var tranparent = false;
 					if (absoluteY == pHeight && absoluteY < 100)
 					{
-                        if (Random.value < 0.4f)
-                        {
-                            blocks[x, y] = blockManager.FindBlock(4); //tall_grass
-                        }
+						if (Random.value < 0.4f)
+						{
+							blocks[x, y] = blockManager.FindBlock(4); //tall_grass
+						}
 						tranparent = true;
 					}
-                    else if (absoluteY == pHeight-1 && absoluteY < 100)
-                    {
-                            blocks[x, y] = blockManager.FindBlock(1); //grass
-                    }
-                    else if (absoluteY < pHeight - Random.Range(4, 16) || absoluteY > pHeight - 1 || absoluteY > 100)
-                    {
-                        blocks[x, y] = blockManager.FindBlock(3); //stone
-                    }
-                    else
-                    {
-                        blocks[x, y] = blockManager.FindBlock(2); //dirt
-                    }
-                    if ((absoluteY == pHeight || absoluteY == pHeight - 1) && absoluteY > 250)
+					else if (absoluteY == pHeight - 1 && absoluteY < 100)
+					{
+						blocks[x, y] = blockManager.FindBlock(1); //grass
+					}
+					else if (absoluteY < pHeight - Random.Range(4, 16) || absoluteY > pHeight - 1 || absoluteY > 100)
+					{
+						blocks[x, y] = blockManager.FindBlock(3); //stone
+					}
+					else
+					{
+						blocks[x, y] = blockManager.FindBlock(2); //dirt
+					}
+					if ((absoluteY == pHeight || absoluteY == pHeight - 1) && absoluteY > 250)
 					{
 						blocks[x, y] = blockManager.FindBlock(5); //snow
 					}
@@ -122,7 +122,58 @@ public class Chunk
 	public void RemoveBlock(Vector2Int pos, bool transparent)
 	{
 		blocks[pos.x, pos.y] = blockManager.FindBlock(0);
+		if (!transparent)
+		{
+			DecreaseSurround(pos);
+		}
 		//TODO: перезаполнение карты коллайдеров сосдних блоков
+	}
+
+	private void DecreaseSurround(Vector2Int coord)
+	{
+		if (coord.x > 0)
+		{
+			var pos = new Vector2Int(coord.x - 1, coord.y);
+			surroundMap[pos.x,pos.y] -= 1;
+			if (IsOpenBlock(pos) && HasBlockAtCoord(pos))
+			{
+				AssignCollider(blockObjects[pos.x,pos.y], !blocks[pos.x,pos.y].isSolid);
+			}
+		}
+		if (coord.y > 0)
+		{
+			var pos = new Vector2Int(coord.x, coord.y - 1);
+			surroundMap[coord.x, coord.y - 1] -= 1;
+			if (IsOpenBlock(pos) && HasBlockAtCoord(pos))
+			{
+				AssignCollider(blockObjects[pos.x,pos.y], !blocks[pos.x,pos.y].isSolid);
+			}
+		}
+		if (coord.x < ChunkManager.CHUNK_SIZE - 1)
+		{
+			var pos = new Vector2Int(coord.x + 1, coord.y);
+			surroundMap[coord.x + 1, coord.y] -= 1;
+			if (IsOpenBlock(pos) && HasBlockAtCoord(pos))
+			{
+				AssignCollider(blockObjects[pos.x,pos.y], !blocks[pos.x,pos.y].isSolid);
+			}
+		}
+		if (coord.y < ChunkManager.CHUNK_SIZE - 1)
+		{
+			var pos = new Vector2Int(coord.x, coord.y + 1);
+			surroundMap[coord.x, coord.y + 1] -= 1;
+			if (IsOpenBlock(pos) && HasBlockAtCoord(pos))
+			{
+				AssignCollider(blockObjects[pos.x,pos.y], !blocks[pos.x,pos.y].isSolid);
+			}
+		}
+	}
+
+	#region Block Properties
+
+	public BlockManager BlockManager
+	{
+		get { return blockManager; }
 	}
 
 	public bool IsOpenBlock(Vector2Int coord)
@@ -155,6 +206,8 @@ public class Chunk
 		return blocks[coord.x, coord.y].display_name;
 	}
 
+	#endregion
+
 	public void GenerateTiles()
 	{
 		for (int x = 0; x < ChunkManager.CHUNK_SIZE; x++)
@@ -176,50 +229,41 @@ public class Chunk
 		CreateTile(tilePos);
 	}
 
-	public GameObject CreateTile(Vector2Int pos)
+	private GameObject CreateTile(Vector2Int pos)
 	{
 		var blockTag = "Block";
 		bool isTrigger = false;
 
-		//Добавление .5f позволяет нам устанавливать блок так что б он был от 0 до 1, а не от -.5f до .5f
 		var position = GetTileWorldPos(pos);
+		var blockInfo = blocks[pos.x, pos.y];
 
-		if (!IsSolidBlock(pos))
+		if (!blockInfo.isSolid)
 		{
 			isTrigger = true;
 			blockTag = "tall_grass";
 		}
-		var block = InstantiateTile(gameObject.transform, GetBlockSprite(pos), position,
-			GetBlockName(pos), blockTag, IsOpenBlock(pos), isTrigger);
-		block.layer = 13;
-		return block;
-	}
 
-	public GameObject InstantiateTile(Transform parent, Sprite sprite, Vector3 position, string displayName,
-		string blockTag, bool isOpenBlock, bool isTrigger)
-	{
-		GameObject blockObject = blockManager.PopGameObject();
-		blockObject.transform.parent = parent;
-
+		GameObject blockObject = blockManager.GetBlockObject();
+		blockObject.transform.parent = gameObject.transform;
 		var sr = blockObject.GetComponent<SpriteRenderer>();
 		if (!sr)
 		{
 			sr = blockObject.AddComponent<SpriteRenderer>();
 		}
-		sr.sprite = sprite;
-		blockObject.name = displayName;
+		sr.sprite = blockInfo.GetSprite();
+		blockObject.name = blockInfo.display_name;
 		blockObject.tag = blockTag;
 		blockObject.transform.position = position;
 		sr.material = blockManager.mainMaterial;
 		blockObject.layer = 13; //TODO: Хардкод для слоя препядствий света
-		if (isOpenBlock)
+		if (IsOpenBlock(pos))
 		{
 			AssignCollider(blockObject, isTrigger);
 		}
 		return blockObject;
 	}
 
-	private void AssignCollider(GameObject blockObject, bool isTrigger)
+	private static void AssignCollider(GameObject blockObject, bool isTrigger)
 	{
 		var bc = blockObject.GetComponent<BoxCollider2D>();
 		if (!bc)
@@ -245,7 +289,6 @@ public class Chunk
 
 		if (block.name == "grass")
 		{
-			// TODO: даже знать не хочу что тут происходит
 			var upCoord = new Vector2Int(tileCoord.x, tileCoord.y + 1);
 			if (HasBlockAtCoord(upCoord))
 			{

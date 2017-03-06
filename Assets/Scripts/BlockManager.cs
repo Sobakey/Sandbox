@@ -73,18 +73,18 @@ public class BlockManager : MonoBehaviour
 		return null;
 	}
 
-	public GameObject PopGameObject()
+	public GameObject GetBlockObject()
 	{
 		GameObject blockObject;
 		if (blocksPool.Count != 0)
 		{
 			blockObject = blocksPool.Dequeue();
 			blockObject.SetActive(true);
-
 		}
 		else
 		{
 			blockObject = new GameObject();
+			blockObject.AddComponent<SpriteRenderer>();
 		}
 		return blockObject;
 	}
