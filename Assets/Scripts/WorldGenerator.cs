@@ -10,15 +10,16 @@ public class WorldGenerator : MonoBehaviour
 
 	//Количиство чанков вокруг игрока, которые должны присутствовать на сцене одновременно
 	public int viewDistance = 3;
-
-	public int seed;
+    #region Параметры генерации мира
+    public int seed;
 	public bool isRandomSeed = true;
 	public int worldHeight = 255;
 	public float scale = 1.0f;
 	public int octaves = 1;
 	public float persistance = 1.0f;
 	public float lacunarity = 1.0f;
-	private BlockManager blockManager;
+    #endregion
+    private BlockManager blockManager;
 
 	private PerlinNoizeGenerator perlinNoizeGenerator;
 
