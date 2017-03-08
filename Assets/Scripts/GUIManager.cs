@@ -7,9 +7,11 @@ public class GUIManager : MonoBehaviour {
 
     public Image playerInventory;
     public bool isInventoryOpen = false;
+    public bool isOptionPanelOpen = false;
     public Image[] slots;
     public GameObject slotPrefab;
     public Image grayOut;
+    public Image optionPanel;
 
     private Inventory playerInventoryScript;
     private GameObject cursorIcon;
@@ -66,6 +68,12 @@ public class GUIManager : MonoBehaviour {
         grayOut.color = value ? new Color(0, 0, 0, 0.75f) : new Color(0, 0, 0, 0);
         playerInventory.gameObject.SetActive(value);
         isInventoryOpen = value;
+    }
+
+    public void ShowOptionPanel(bool value)
+    {
+        optionPanel.gameObject.SetActive(value);
+        isOptionPanelOpen = value;
     }
 
     private void RenderCursorStack()

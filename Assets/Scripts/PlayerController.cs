@@ -33,7 +33,7 @@ public class PlayerController : MonoBehaviour
 		anim = GetComponent<Animator>();
 		guiManager = GameObject.Find("GUI").GetComponent<GUIManager>();
 		groundCheck = transform.FindChild("Ground_Checker");
-		//hotbar = GameObject.Find("Hotbar").GetComponent<Hotbar>();
+		hotbar = GameObject.Find("HUD").GetComponent<Hotbar>();
 		worldGen = GameObject.Find("World").GetComponent<WorldGenerator>();
 		blockManager = GameObject.Find("GameManager").GetComponent<BlockManager>();
 		bounds = GetComponent<BoxCollider2D>().size;
@@ -92,6 +92,21 @@ public class PlayerController : MonoBehaviour
 				guiManager.ShowInventory(true);
 			}
 		}
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            
+            if (guiManager.isOptionPanelOpen)
+            {
+                guiManager.ShowOptionPanel(false);
+                Time.timeScale = 1;
+            }
+            else
+            {
+                guiManager.ShowOptionPanel(true);
+                Time.timeScale = 0;
+            }
+        }
 
 		// клавиша ускорения -->
 		if (Input.GetKey(leftKey) && Input.GetKey(RunKey))
