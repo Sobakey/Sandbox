@@ -354,10 +354,6 @@ public class Chunk
 		//TODO: пока удаляем, после надо думать как организовать хранение в памяти, а после в файле
 		if (Application.isPlaying)
 			Object.Destroy(chunkTransform.gameObject);
-#if UNITY_EDITOR
-		else
-			Object.DestroyImmediate(chunkTransform.gameObject);
-#endif
 	}
 }
 
