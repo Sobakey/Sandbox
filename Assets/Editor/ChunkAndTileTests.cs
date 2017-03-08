@@ -24,7 +24,7 @@ public class ChunkAndTileTests
 	public void ChunkFindByCoordsTest()
 	{
 		var pos = new Vector2Int(0, 0);
-		var chunk = new Chunk(blockManager, pos);
+		var chunk = new Chunk(blockManager, perlinNoizeGenerator, pos);
 		ChunkManager.Instance.AddChunk(chunk);
 
 		Assert.IsTrue(ChunkManager.Instance.HasChunkAtPos(pos));
@@ -40,7 +40,7 @@ public class ChunkAndTileTests
 		[NUnit.Framework.Values(1, -1)]	int mul)
 	{
 		var sign = Mathf.Sign(mul);
-		var chunk = new Chunk(blockManager, new Vector2Int(chunkPosX, chunkPosY));
+		var chunk = new Chunk(blockManager, perlinNoizeGenerator, new Vector2Int(chunkPosX, chunkPosY));
 		var targetCoord = new Vector2Int(ChunkManager.CHUNK_SIZE - (x + 1), ChunkManager.CHUNK_SIZE - (y + 1));
 		if (mul > 0)
 		{

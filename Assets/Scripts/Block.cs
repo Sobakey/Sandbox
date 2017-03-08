@@ -10,7 +10,13 @@ public class Block {
     public bool isSolid = true;
     public Drop[] drops;
 
+	private System.Random rnd;
+	public Block()
+	{
+		rnd = new System.Random();
+	}
+
     public Sprite GetSprite(){
-        return sprites[Random.Range(0, sprites.Length - 1)];
+        return sprites[rnd.Next(0, sprites.Length - 1)];
     }
 }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
@@ -10,11 +11,11 @@ public class Chunk
 	public int[,] surroundMap;
 
 
-	public GameObject gameObject;
+	public Transform chunkTransform;
 	public Vector2Int coords;
 
-	public bool IsEmpty { get; private set; }
-
+	private PerlinNoizeGenerator perlinNoizeGenerator;
+	private System.Random rnd = new System.Random();
 
 	public Vector2 GetWorldPos()
 	{
@@ -33,18 +34,24 @@ public class Chunk
 			(int) ((ChunkManager.CHUNK_SIZE + (pos.y % ChunkManager.CHUNK_SIZE)) % ChunkManager.CHUNK_SIZE));
 	}
 
-	public Chunk(BlockManager blockManager, Vector2Int position)
+	public Chunk(BlockManager blockManager, PerlinNoizeGenerator perlinNoizeGenerator, Vector2Int position)
 	{
-		IsEmpty = true;
+		chunkTransform = new GameObject("Chunk").transform;
 		this.blockManager = blockManager;
 		this.coords = position;
 		blocks = new Block[ChunkManager.CHUNK_SIZE, ChunkManager.CHUNK_SIZE];
 		blockObjects = new GameObject[ChunkManager.CHUNK_SIZE, ChunkManager.CHUNK_SIZE];
 		surroundMap = new int[blocks.GetLength(0), blocks.GetLength(1)];
-		gameObject = new GameObject();
+		this.perlinNoizeGenerator = perlinNoizeGenerator;
 	}
 
-	public void GenerateBlocksInfos(PerlinNoizeGenerator perlinNoizeGenerator)
+	public void Construct()
+	{
+		GenerateBlocksInfos();
+		GenerateTiles();
+	}
+
+	private void GenerateBlocksInfos()
 	{
 		for (int x = 0; x < ChunkManager.CHUNK_SIZE; x++)
 		{
@@ -58,7 +65,7 @@ public class Chunk
 					var tranparent = false;
 					if (absoluteY == pHeight && absoluteY < 100)
 					{
-						if (Random.value < 0.4f)
+						if (rnd.Next(0, 100) < 40)
 						{
 							blocks[x, y] = blockManager.FindBlock(4); //tall_grass
 						}
@@ -68,7 +75,7 @@ public class Chunk
 					{
 						blocks[x, y] = blockManager.FindBlock(1); //grass
 					}
-					else if (absoluteY < pHeight - Random.Range(4, 16) || absoluteY > pHeight - 1 || absoluteY > 100)
+					else if (absoluteY < pHeight -  rnd.Next(4, 16) || absoluteY > pHeight - 1 || absoluteY > 100)
 					{
 						blocks[x, y] = blockManager.FindBlock(3); //stone
 					}
@@ -81,7 +88,6 @@ public class Chunk
 						blocks[x, y] = blockManager.FindBlock(5); //snow
 					}
 
-					IsEmpty = false;
 					if (!tranparent)
 					{
 						if (x > 0)
@@ -118,7 +124,7 @@ public class Chunk
 	///
 	/// </summary>
 	/// <param name="pos"></param>
-	/// <param name="transparent">Указывает что блок который удаляется прозрачный и не оказывает влияния на коллайдеры соседей</param>
+	/// <param name="transparent">Указывает что блок, который удаляется, прозрачный и не оказывает влияния на коллайдеры соседей</param>
 	public void RemoveBlock(Vector2Int pos, bool transparent)
 	{
 		blocks[pos.x, pos.y] = blockManager.FindBlock(0);
@@ -137,7 +143,7 @@ public class Chunk
 			surroundMap[pos.x,pos.y] -= 1;
 			if (IsOpenBlock(pos) && HasBlockAtCoord(pos))
 			{
-				AssignCollider(blockObjects[pos.x,pos.y], !blocks[pos.x,pos.y].isSolid);
+				blockManager.AssignCollider(blockObjects[pos.x,pos.y], !blocks[pos.x,pos.y].isSolid);
 			}
 		}
 		if (coord.y > 0)
@@ -146,7 +152,7 @@ public class Chunk
 			surroundMap[coord.x, coord.y - 1] -= 1;
 			if (IsOpenBlock(pos) && HasBlockAtCoord(pos))
 			{
-				AssignCollider(blockObjects[pos.x,pos.y], !blocks[pos.x,pos.y].isSolid);
+				blockManager.AssignCollider(blockObjects[pos.x,pos.y], !blocks[pos.x,pos.y].isSolid);
 			}
 		}
 		if (coord.x < ChunkManager.CHUNK_SIZE - 1)
@@ -155,7 +161,7 @@ public class Chunk
 			surroundMap[coord.x + 1, coord.y] -= 1;
 			if (IsOpenBlock(pos) && HasBlockAtCoord(pos))
 			{
-				AssignCollider(blockObjects[pos.x,pos.y], !blocks[pos.x,pos.y].isSolid);
+				blockManager.AssignCollider(blockObjects[pos.x,pos.y], !blocks[pos.x,pos.y].isSolid);
 			}
 		}
 		if (coord.y < ChunkManager.CHUNK_SIZE - 1)
@@ -164,7 +170,7 @@ public class Chunk
 			surroundMap[coord.x, coord.y + 1] -= 1;
 			if (IsOpenBlock(pos) && HasBlockAtCoord(pos))
 			{
-				AssignCollider(blockObjects[pos.x,pos.y], !blocks[pos.x,pos.y].isSolid);
+				blockManager.AssignCollider(blockObjects[pos.x,pos.y], !blocks[pos.x,pos.y].isSolid);
 			}
 		}
 	}
@@ -208,7 +214,7 @@ public class Chunk
 
 	#endregion
 
-	public void GenerateTiles()
+	private void GenerateTiles()
 	{
 		for (int x = 0; x < ChunkManager.CHUNK_SIZE; x++)
 		{
@@ -216,7 +222,7 @@ public class Chunk
 			{
 				if (blocks[x, y] != null)
 				{
-					blockObjects[x, y] = CreateTile(new Vector2Int(x, y));
+					CreateTile(new Vector2Int(x, y));
 				}
 			}
 		}
@@ -229,7 +235,7 @@ public class Chunk
 		CreateTile(tilePos);
 	}
 
-	private GameObject CreateTile(Vector2Int pos)
+	private void CreateTile(Vector2Int pos)
 	{
 		var blockTag = "Block";
 		bool isTrigger = false;
@@ -243,34 +249,24 @@ public class Chunk
 			blockTag = "tall_grass";
 		}
 
-		GameObject blockObject = blockManager.GetBlockObject();
-		blockObject.transform.parent = gameObject.transform;
-		var sr = blockObject.GetComponent<SpriteRenderer>();
-		if (!sr)
+		var rTile = new RequestedTile
 		{
-			sr = blockObject.AddComponent<SpriteRenderer>();
-		}
-		sr.sprite = blockInfo.GetSprite();
-		blockObject.name = blockInfo.display_name;
-		blockObject.tag = blockTag;
-		blockObject.transform.position = position;
-		sr.material = blockManager.mainMaterial;
-		blockObject.layer = 13; //TODO: Хардкод для слоя препядствий света
-		if (IsOpenBlock(pos))
-		{
-			AssignCollider(blockObject, isTrigger);
-		}
-		return blockObject;
+			chunk = this,
+			transform = chunkTransform,
+			isTrigger = isTrigger,
+			tag = blockTag,
+			name = blockInfo.display_name,
+			sprite = blockInfo.GetSprite(),
+			position = position,
+			pos = pos,
+			isOpenBlock = IsOpenBlock(pos)
+		};
+		blockManager.QueueTileToMainThread(rTile);
 	}
 
-	private static void AssignCollider(GameObject blockObject, bool isTrigger)
+	public void AssignBlockObject(GameObject blockObject, Vector2Int pos)
 	{
-		var bc = blockObject.GetComponent<BoxCollider2D>();
-		if (!bc)
-		{
-			bc = blockObject.AddComponent<BoxCollider2D>();
-		}
-		bc.isTrigger = isTrigger;
+		blockObjects[pos.x, pos.y] = blockObject;
 	}
 
 	public void DestroyTile(GameObject block)
@@ -357,10 +353,23 @@ public class Chunk
 		}
 		//TODO: пока удаляем, после надо думать как организовать хранение в памяти, а после в файле
 		if (Application.isPlaying)
-			Object.Destroy(gameObject);
+			Object.Destroy(chunkTransform.gameObject);
 #if UNITY_EDITOR
 		else
-			Object.DestroyImmediate(gameObject);
+			Object.DestroyImmediate(chunkTransform.gameObject);
 #endif
 	}
+}
+
+public struct RequestedTile
+{
+	public Chunk chunk;
+	public Transform transform;
+	public Sprite sprite;
+	public string name;
+	public string tag;
+	public Vector2 position;
+	public bool isOpenBlock;
+	public bool isTrigger;
+	public Vector2Int pos;
 }

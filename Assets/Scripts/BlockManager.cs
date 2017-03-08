@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Configuration;
 using UnityEngine;
 
@@ -10,10 +11,11 @@ public class BlockManager : MonoBehaviour
 	public Material mainMaterial;
 	public Material backgroundMaterial;
 	public Block[] blocks;
-	private readonly Dictionary<int, Block> blocksCache = new Dictionary<int, Block>();
-	private readonly Dictionary<string, int> blocksNameCache = new Dictionary<string, int>();
+	private Block[] blockAccessor;
 
 	private static Queue<GameObject> blocksPool = new Queue<GameObject>();
+
+	public Queue<Func<GameObject>> tileCreateQueue = new Queue<Func<GameObject>>();
 
 	private static GameObject _blockObjectPool;
 
@@ -24,32 +26,67 @@ public class BlockManager : MonoBehaviour
 
 	void Start()
 	{
+		blockAccessor = new Block[blocks.Max(x=>x.id) + 1];
+
 		foreach (var item in blocks)
 		{
-			blocksCache.Add(item.id, item);
-			blocksNameCache.Add(item.display_name, item.id);
+			blockAccessor[item.id] = item;
 		}
 	}
 
+	void Update()
+	{
+		PerformMainQueue();
+	}
+
+	public void QueueTileToMainThread(RequestedTile rTile)
+	{
+		lock (mainQueue)
+		{
+			mainQueue.Enqueue(rTile);
+		}
+	}
+	private Queue<RequestedTile> mainQueue = new Queue<RequestedTile>();
+	private void PerformMainQueue()
+	{
+		lock (mainQueue)
+		{
+			while (mainQueue.Count > 0)
+			{
+				var rTile = mainQueue.Dequeue();
+				GameObject blockObject = GetBlockObject();
+				blockObject.transform.parent = rTile.transform;
+				var sr = blockObject.GetComponent<SpriteRenderer>();
+				sr.sprite = rTile.sprite;
+				blockObject.name = rTile.name;
+				blockObject.tag = rTile.tag;
+				blockObject.transform.position = rTile.position;
+				sr.material = mainMaterial;
+				blockObject.layer = 13; //TODO: Хардкод для слоя препядствий света
+				if (rTile.isOpenBlock)
+				{
+					AssignCollider(blockObject, rTile.isTrigger);
+				}
+				rTile.chunk.AssignBlockObject(blockObject, rTile.pos);
+			}
+		}
+	}
+
+	public void AssignCollider(GameObject blockObject, bool isTrigger)
+	{
+		var bc = blockObject.GetComponent<BoxCollider2D>();
+		if (!bc)
+		{
+			bc = blockObject.AddComponent<BoxCollider2D>();
+		}
+		bc.isTrigger = isTrigger;
+	}
+
+	//Это очень часто вызываемая функция, дополнительные проверки вызывают проблемы с производительностью.
+	//Мы должны считать что программист не передает сюда некорректные значения!
 	public Block FindBlock(int id)
 	{
-		Block res;
-		if (blocksCache.TryGetValue(id, out res))
-		{
-			return res;
-		}
-		return null;
-	}
-
-
-	public Block FindBlock(string blockName)
-	{
-		int id;
-		if (blocksNameCache.TryGetValue(blockName, out id))
-		{
-			return FindBlock(id);
-		}
-		return null;
+		return blockAccessor[id];
 	}
 
 	public void CreateTileAtPos(int blockId, Vector2 pos)

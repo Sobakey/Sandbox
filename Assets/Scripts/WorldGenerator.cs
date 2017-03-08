@@ -9,7 +9,7 @@ public class WorldGenerator : MonoBehaviour
 	public GameObject player;
 
 	//Количиство чанков вокруг игрока, которые должны присутствовать на сцене одновременно
-	public int viewDistance = 3;
+	public int generateDistance = 3;
 
 	public int seed;
 	public bool isRandomSeed = true;
@@ -41,7 +41,7 @@ public class WorldGenerator : MonoBehaviour
 			seed = Random.Range(-5000, 5000);
 		}
 		ChunkManager.Instance.Reset();
-
+		ChunkManager.Instance.GenerateDistance = generateDistance;
 		perlinNoizeGenerator = new PerlinNoizeGenerator(new Vector2Int(seed, seed), worldHeight, scale, octaves,
 			persistance, lacunarity);
 		if (Application.isPlaying)
@@ -61,8 +61,7 @@ public class WorldGenerator : MonoBehaviour
 	{
 		if (Application.isPlaying)
 		{
-			ChunkManager.Instance.UpdateChunks(blockManager, perlinNoizeGenerator, player.transform.position,
-				viewDistance);
+			ChunkManager.Instance.UpdateChunks(blockManager, perlinNoizeGenerator, player.transform.position);
 		}
 	}
 

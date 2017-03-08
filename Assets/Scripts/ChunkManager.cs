@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 
 public class ChunkManager
 {
 	public const int CHUNK_SIZE = 32;
 	private static ChunkManager instance;
+
+	public int GenerateDistance = 1;
 
 	public static ChunkManager Instance
 	{
@@ -43,7 +46,6 @@ public class ChunkManager
 	}
 
 
-
 	public void AddChunk(Chunk chunk)
 	{
 		chunks.Add(chunk.coords, chunk);
@@ -55,28 +57,20 @@ public class ChunkManager
 	}
 
 	public void UpdateChunks(BlockManager blockManager, PerlinNoizeGenerator perlinNoizeGenerator,
-		Vector2 playerPosition, int viewDistance)
+		Vector2 playerPosition)
 	{
 		var playerPos = GetChunkCoordAtPos(playerPosition);
 
-		for (int x = playerPos.x - viewDistance; x <= playerPos.x + viewDistance; x++)
+		for (int x = playerPos.x - GenerateDistance; x <= playerPos.x + GenerateDistance; x++)
 		{
-			for (int y = playerPos.y - viewDistance; y <= playerPos.y + viewDistance; y++)
+			for (int y = playerPos.y - GenerateDistance; y <= playerPos.y + GenerateDistance; y++)
 			{
 				var pos = new Vector2Int(x, y);
 				if (!HasChunkAtPos(pos))
 				{
-					Chunk newChunk = new Chunk(blockManager, pos);
-					newChunk.GenerateBlocksInfos(perlinNoizeGenerator);
-					if (!newChunk.IsEmpty)
-					{
-						newChunk.GenerateTiles();
-						AddChunk(newChunk);
-					}
-					else
-					{
-						newChunk.Destroy();
-					}
+					Chunk newChunk = new Chunk(blockManager, perlinNoizeGenerator, pos);
+					new Thread(()=> newChunk.Construct()).Start();
+					AddChunk(newChunk);
 				}
 			}
 		}
@@ -85,7 +79,7 @@ public class ChunkManager
 		{
 			var xDiff = Mathf.Abs(Mathf.Abs(chunk.coords.x) - Mathf.Abs(playerPos.x));
 			var yDiff = Mathf.Abs(Mathf.Abs(chunk.coords.y) - Mathf.Abs(playerPos.y));
-			if (xDiff > viewDistance || yDiff > viewDistance)
+			if (xDiff > GenerateDistance || yDiff > GenerateDistance)
 			{
 				chunk.Destroy();
 				RemoveChunk(chunk);
