@@ -69,7 +69,7 @@ public class ChunkManager
 				if (!HasChunkAtPos(pos))
 				{
 					Chunk newChunk = new Chunk(blockManager, perlinNoizeGenerator, pos);
-					new Thread(()=> newChunk.Construct()).Start();
+					newChunk.Construct();
 					AddChunk(newChunk);
 				}
 			}

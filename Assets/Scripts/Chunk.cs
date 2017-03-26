@@ -261,7 +261,8 @@ public class Chunk
 			pos = pos,
 			isOpenBlock = IsOpenBlock(pos)
 		};
-		blockManager.QueueTileToMainThread(rTile);
+		blockManager.PerformTileCreation(rTile);
+		//blockManager.QueueTileToMainThread(rTile);
 	}
 
 	public void AssignBlockObject(GameObject blockObject, Vector2Int pos)

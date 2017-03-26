@@ -23,6 +23,6 @@ public class ItemDatabase : MonoBehaviour {
 
 	public static ItemDatabase Instance
 	{
-		get { return instance ?? (GameObject.Find("GameManager").GetComponent<ItemDatabase>()); }
+		get { return instance ?? (instance = GameObject.Find("GameManager").GetComponent<ItemDatabase>()); }
 	}
 }

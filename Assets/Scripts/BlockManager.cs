@@ -51,25 +51,32 @@ public class BlockManager : MonoBehaviour
 	{
 		lock (mainQueue)
 		{
-			while (mainQueue.Count > 0)
+			var counter = 0;
+			while (mainQueue.Count > 0 && counter < ChunkManager.CHUNK_SIZE * 9)
 			{
 				var rTile = mainQueue.Dequeue();
-				GameObject blockObject = GetBlockObject();
-				blockObject.transform.parent = rTile.transform;
-				var sr = blockObject.GetComponent<SpriteRenderer>();
-				sr.sprite = rTile.sprite;
-				blockObject.name = rTile.name;
-				blockObject.tag = rTile.tag;
-				blockObject.transform.position = rTile.position;
-				sr.material = mainMaterial;
-				blockObject.layer = 13; //TODO: Хардкод для слоя препядствий света
-				if (rTile.isOpenBlock)
-				{
-					AssignCollider(blockObject, rTile.isTrigger);
-				}
-				rTile.chunk.AssignBlockObject(blockObject, rTile.pos);
+				PerformTileCreation(rTile);
+				counter++;
 			}
 		}
+	}
+
+	public void PerformTileCreation(RequestedTile rTile)
+	{
+		GameObject blockObject = GetBlockObject();
+		blockObject.transform.parent = rTile.transform;
+		var sr = blockObject.GetComponent<SpriteRenderer>();
+		sr.sprite = rTile.sprite;
+		blockObject.name = rTile.name;
+		blockObject.tag = rTile.tag;
+		blockObject.transform.position = rTile.position;
+		sr.material = mainMaterial;
+		blockObject.layer = 13; //TODO: Хардкод для слоя препядствий света
+		if (rTile.isOpenBlock)
+		{
+			AssignCollider(blockObject, rTile.isTrigger);
+		}
+		rTile.chunk.AssignBlockObject(blockObject, rTile.pos);
 	}
 
 	public void AssignCollider(GameObject blockObject, bool isTrigger)

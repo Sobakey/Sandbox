@@ -51,7 +51,7 @@ public class Hotbar : MonoBehaviour
             for (int i = 1; i <=  3; i++)
             {
                  int j = i;
-                if (transform.FindChild("LH").GetChild(j).gameObject.active)
+                if (transform.FindChild("LH").GetChild(j).gameObject.activeInHierarchy)
                 {
                     transform.FindChild("LH").GetChild(j).gameObject.SetActive(false);
                     if (i == 3) j = 0;
@@ -67,7 +67,7 @@ public class Hotbar : MonoBehaviour
             for (int i = 1; i <= 3; i++)
             {
                 int j = i;
-                if (transform.FindChild("RH").GetChild(j).gameObject.active)
+                if (transform.FindChild("RH").GetChild(j).gameObject.activeInHierarchy)
                 {
                     transform.FindChild("RH").GetChild(j).gameObject.SetActive(false);
                     if (i == 3) j = 0;
